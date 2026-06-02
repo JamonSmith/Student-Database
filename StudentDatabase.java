@@ -1,0 +1,234 @@
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Collections;
+import java.util.Comparator;
+
+class Student
+{
+	private String name;
+	private int grade;
+	
+	Student(String name, int grade)
+	{
+		this.name = name;
+		
+		if (grade > 100)
+		{
+			grade = 100;
+		}
+		else if (grade < 0)
+		{
+			grade = 0;
+		}
+		this.grade = grade;
+	}
+	
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	
+	
+	public String getName()
+	{
+		return name;
+	}
+	
+	public void setGrade(int grade)
+	{
+		if (grade > 100)
+		{
+			grade = 100;
+		}
+		else if (grade < 0)
+		{
+			grade = 0;
+		}
+		
+		this.grade = grade;
+	}
+	
+	public int getGrade()
+	{
+		return grade;
+	}
+	
+	public int compareTo(Student other)
+	{
+		return other.grade - this.grade;
+	}
+	
+	public void printInfo()
+	{
+		System.out.println(name + " : " + grade);
+	}
+}
+
+public class StudentDatabase
+{
+	public static void displayStudents(HashMap<String, Student> student)
+	{
+		if (student.size() == 0)
+		{
+			System.out.println("No items to print");
+		}
+		else
+		{
+			for (String s : student.keySet())
+			{
+				student.get(s).printInfo();
+			}
+		}
+		System.out.println();
+	}
+	
+	public static void addStudent(HashMap<String, Student> student, String name, int grade)
+	{
+		Student s = new Student(name, grade);
+		
+		student.put(name, s);
+		
+		System.out.println("Added:");
+		student.get(name).printInfo();
+	}
+	
+	public static void renameStudent(HashMap<String, Student> student, String name, String newName)
+	{
+		Student curr = student.remove(name);
+		
+		if (curr != null)
+		{
+			curr.setName(newName);
+			student.put(newName, curr);
+		}
+		else
+		{
+			System.out.println(name + " not in dataset");
+		}
+	}
+	
+	public static void removeStudent(HashMap<String, Student> student, String removeName)
+	{
+		Student rm = student.remove(removeName);
+		
+		if (rm != null)
+		{
+			System.out.println("Removed: ");
+			rm.printInfo();
+			System.out.println();
+		}
+		else
+		{
+			System.out.println(removeName + " not in dataset");
+		}
+	}
+	
+	public static void updateGrade(HashMap<String, Student> student, String name, int grade)
+	{
+		Student curr = student.get(name);
+		
+		if (curr != null)
+		{
+			curr.setGrade(grade);
+		}
+		else
+		{
+			System.out.println(name + " not in dataset");
+		}
+	}
+	
+	public static void main(String[] args)
+	{
+		System.out.println();
+		System.out.println("=== Student Database ===");
+		System.out.println();
+		System.out.println("1.) Display Students");
+		System.out.println("2.) Add Student");
+		System.out.println("3.) Rename Student");
+		System.out.println("4.) Remove Student");
+		System.out.println("5.) Update Grade");
+		System.out.println("6.) Save Student Data");
+		System.out.println("7.) Load Student Data");
+		System.out.println("8.) Exit");
+		System.out.println();
+		
+		HashMap<String, Student> students = new HashMap<>();
+		
+		while (true)
+		{
+			try
+			{
+				System.out.println("Please enter a positive integer:");
+				
+				Scanner sc = new Scanner(System.in);
+			
+				int x = Integer.parseInt(sc.nextLine());
+				
+				if (x == 1)
+				{
+					displayStudents(students);
+				}
+				else if (x == 2)
+				{
+					System.out.println("Enter student name:");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("Enter student grade");
+					
+					int stuGrade = sc.nextInt();
+					sc.nextLine();
+					
+					addStudent(students, stuName, stuGrade);
+					
+				}	
+				else if (x == 3)
+				{
+					System.out.println("Enter student name:");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("Enter new student name");
+					
+					String newStuName = sc.nextLine();
+					
+					renameStudent(students, stuName, newStuName);
+				}
+				else if (x == 4)
+				{
+					System.out.println("Enter student name:");
+					
+					String stuName = sc.nextLine();
+					
+					removeStudent(students, stuName);
+				}
+				else if (x == 5)
+				{
+					System.out.println("Enter student name:");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("Enter student grade");
+					
+					int stuGrade = sc.nextInt();
+					sc.nextLine();
+					
+					updateGrade(students, stuName, stuGrade);
+				}
+				else if (x == 8)
+				{
+					System.out.println("Thank you, good bye");
+					break;
+				}
+				else
+				{
+					System.out.println("Invalid command, please select one of the numbers above");
+				}
+			}
+			catch (NumberFormatException e)
+			{
+				System.out.println("Cannot convert that input to a numeric value");
+			}
+		}
+	}
+}
