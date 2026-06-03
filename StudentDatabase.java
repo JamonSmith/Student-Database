@@ -2,8 +2,11 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Collections;
 import java.util.Comparator;
+import java.io.IOException;
+import java.io.File;
+import java.io.PrintWriter;
 
-class Student
+class Student implements Comparable<Student>
 {
 	private String name;
 	private int grade;
@@ -137,12 +140,70 @@ public class StudentDatabase
 		}
 	}
 	
+	public static void updateFile(HashMap<String, Student> student, String str)
+	{
+		if (!str.endsWith(".txt"))
+		{
+			System.out.println("Incorrect file format");
+			return;
+		}
+		
+		try
+		{
+			PrintWriter p = new PrintWriter(new File(str));
+			
+			for (Student stu : student.values())
+			{
+				p.println(stu.getName() + "," + stu.getGrade());
+			}
+			
+			p.close();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Could not write to file " + str);
+			return;
+		}
+	}
+	
+	public static HashMap<String, Student> readFromFile(String readFile)
+	{
+		HashMap<String, Student> student = new HashMap<>();
+		
+		try
+		{
+			Scanner sc = new Scanner(new File(readFile));
+			
+			
+			while (sc.hasNextLine())
+			{
+				String str = sc.nextLine();
+				
+				String[] fields = str.split(",");
+				
+				String name = fields[0];
+				int grade = Integer.parseInt(fields[1]);
+				
+				Student s = new Student(name, grade);
+				student.put(name, s);
+			}
+			
+			sc.close();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Could not read file");
+		}
+		
+		return student;
+	}
+	
 	public static void main(String[] args)
 	{
 		System.out.println();
 		System.out.println("=== Student Database ===");
 		System.out.println();
-		System.out.println("1.) Display Students");
+		System.out.println("1.) Display Pending Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
 		System.out.println("4.) Remove Student");
@@ -214,6 +275,28 @@ public class StudentDatabase
 					sc.nextLine();
 					
 					updateGrade(students, stuName, stuGrade);
+				}
+				else if (x == 6)
+				{
+					System.out.println("Student Data Updated");
+					
+					updateFile(students, "students.txt");
+				}
+				else if (x == 7)
+				{
+					System.out.println("Showing Student Data:");
+					System.out.println();
+					
+					students = readFromFile("students.txt");
+					
+					if (students.size() != 0)
+					{
+						displayStudents(students);
+					}
+					else
+					{
+						System.out.println("No entries exist for this file");
+					}
 				}
 				else if (x == 8)
 				{
