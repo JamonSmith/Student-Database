@@ -1,8 +1,9 @@
 Christine,98
 Nico,85
-Don,100
 Anthony,97
+Nick,70
 Devyn,92
+Donald,99
 Malik,94
 Alister,89
 Elizabeth,90

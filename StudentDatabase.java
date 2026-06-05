@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.io.IOException;
 import java.io.File;
 import java.io.PrintWriter;
@@ -30,7 +31,6 @@ class Student implements Comparable<Student>
 	{
 		this.name = name;
 	}
-	
 	
 	public String getName()
 	{
@@ -69,6 +69,32 @@ class Student implements Comparable<Student>
 
 public class StudentDatabase
 {
+	private static boolean modified = false;
+	
+	public static Comparator<Student> nac = new Comparator<Student>()
+	{
+		public int compare(Student s1, Student s2)
+		{
+			return s1.getName().compareTo(s2.getName());
+		}
+	};
+	
+	public static Comparator<Student> gac = new Comparator<Student>()
+	{
+		public int compare(Student s1, Student s2)
+		{
+			return s1.getGrade() - s2.getGrade();
+		}
+	};
+	
+	public static Comparator<Student> gdc = new Comparator<Student>()
+	{
+		public int compare(Student s1, Student s2)
+		{
+			return s2.getGrade() - s1.getGrade();
+		}
+	};
+	
 	public static void displayStudents(HashMap<String, Student> student)
 	{
 		if (student.size() == 0)
@@ -91,6 +117,7 @@ public class StudentDatabase
 		Student s = new Student(name, grade);
 		
 		student.put(name, s);
+		modified = true;
 		
 		System.out.println("\tAdded:");
 		System.out.print("\t  ");
@@ -105,6 +132,7 @@ public class StudentDatabase
 		{
 			curr.setName(newName);
 			student.put(newName, curr);
+			modified = true;
 			System.out.println("\tStudent Name Updated:");
 			System.out.print("\t  ");
 			curr.printInfo();
@@ -121,6 +149,7 @@ public class StudentDatabase
 		
 		if (rm != null)
 		{
+			modified = true;
 			System.out.println("\tRemoved: ");
 			System.out.print("\t  ");
 			rm.printInfo();
@@ -140,6 +169,7 @@ public class StudentDatabase
 		if (curr != null)
 		{
 			curr.setGrade(grade);
+			modified = true;
 			System.out.println("\tGrade Updated:");
 			System.out.print("\t  ");
 			curr.printInfo();
@@ -167,6 +197,8 @@ public class StudentDatabase
 			{
 				p.println(stu.getName() + "," + stu.getGrade());
 			}
+			
+			modified = false;
 			
 			p.close();
 		}
@@ -220,11 +252,11 @@ public class StudentDatabase
 		System.out.println("4.) Remove Student");
 		System.out.println("5.) Update Grade");
 		System.out.println("6.) Save Student Data");
-		System.out.println("7.) Exit");
+		System.out.println("7.) Sort Students");
+		System.out.println("0.) Exit");
 		System.out.println();
 		
 		HashMap<String, Student> students = readFromFile("students.txt");
-		
 		Scanner sc = new Scanner(System.in);
 			
 		while (true)
@@ -259,14 +291,24 @@ public class StudentDatabase
 					
 					String stuName = sc.nextLine();
 					
-					System.out.println("\tEnter student grade:");
-					System.out.print("\t  ");
+					Student curr = students.get(stuName);
 					
-					int stuGrade = sc.nextInt();
-					sc.nextLine();
-					
-					addStudent(students, stuName, stuGrade);
-					System.out.println();
+					if (curr == null)
+					{
+						System.out.println("\tEnter student grade:");
+						System.out.print("\t  ");
+						
+						int stuGrade = sc.nextInt();
+						sc.nextLine();
+						
+						addStudent(students, stuName, stuGrade);
+						System.out.println();
+					}
+					else 
+					{
+						System.out.println("\t" + stuName + " is already in the system");
+						System.out.println();
+					}
 				}	
 				else if (x == 3)
 				{
@@ -284,8 +326,18 @@ public class StudentDatabase
 						
 						String newStuName = sc.nextLine();
 						
-						renameStudent(students, stuName, newStuName);
-						System.out.println();
+						Student curr2 = students.get(newStuName);
+						
+						if (curr2 == null)
+						{
+							renameStudent(students, stuName, newStuName);
+							System.out.println();
+						}
+						else
+						{
+							System.out.println("\t" + newStuName + " is already in the system");
+							System.out.println();
+						}
 					}
 					else
 					{
@@ -337,22 +389,91 @@ public class StudentDatabase
 				}
 				else if (x == 7)
 				{
-					System.out.println("\tAre you sure you want to exit?");
-					System.out.println("\tMake sure your database changes have been saved before continuing");
+					
+					
+					
+					
+					
+					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
 					System.out.print("\t  ");
 					
-					String quit = sc.nextLine().toLowerCase();
+					String sorting = sc.nextLine().toLowerCase();
 					System.out.println();
 					
-					if (quit.equals("yes"))
+					ArrayList<Student> studentsCopy = new ArrayList<Student>(students.values());
+					
+					if (sorting.equals("asc"))
 					{
-						System.out.println("\tThank you, good bye");
-						break;
+						Collections.sort(studentsCopy, gac);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
+					}
+					else if (sorting.equals("desc"))
+					{
+						Collections.sort(studentsCopy, gdc);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
+					}
+					else if (sorting.equals("name"))
+					{
+						Collections.sort(studentsCopy, nac);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
 					}
 					else
 					{
-						System.out.println("\tBack to Main Menu");
+						System.out.println("\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter");
 						System.out.println();
+					}
+					
+					
+					
+					
+					
+					
+				}
+				else if (x == 0)
+				{
+					if (modified == true)
+					{
+						System.out.println("\tDatabase changes have not been saved");
+						System.out.println("\tAre you sure you want to exit?");
+						System.out.print("\t  ");
+						
+						String quit = sc.nextLine().toLowerCase();
+						System.out.println();
+						
+						if (quit.equals("yes"))
+						{
+							System.out.println("\tThank you, good bye");
+							break;
+						}
+						else
+						{
+							System.out.println("\tBack to Main Menu");
+							System.out.println();
+						}
+					
+					}
+					else
+					{
+						System.out.println("\tThank you, good bye");
+						break;
 					}
 				}
 				else
