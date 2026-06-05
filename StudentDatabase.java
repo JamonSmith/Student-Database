@@ -79,6 +79,7 @@ public class StudentDatabase
 		{
 			for (String s : student.keySet())
 			{
+				System.out.print("\t");
 				student.get(s).printInfo();
 			}
 		}
@@ -91,7 +92,8 @@ public class StudentDatabase
 		
 		student.put(name, s);
 		
-		System.out.println("Added:");
+		System.out.println("\tAdded:");
+		System.out.print("\t  ");
 		student.get(name).printInfo();
 	}
 	
@@ -106,7 +108,7 @@ public class StudentDatabase
 		}
 		else
 		{
-			System.out.println(name + " not in dataset");
+			System.out.println("\t" + name + " not in dataset");
 		}
 	}
 	
@@ -116,13 +118,15 @@ public class StudentDatabase
 		
 		if (rm != null)
 		{
-			System.out.println("Removed: ");
+			System.out.println("\tRemoved: ");
+			System.out.print("\t  ");
 			rm.printInfo();
 			System.out.println();
 		}
 		else
 		{
-			System.out.println(removeName + " not in dataset");
+			System.out.println("\t" + removeName + " not in dataset");
+			System.out.println();
 		}
 	}
 	
@@ -136,7 +140,8 @@ public class StudentDatabase
 		}
 		else
 		{
-			System.out.println(name + " not in dataset");
+			System.out.println("\t" + name + " not in dataset");
+			System.out.println();
 		}
 	}
 	
@@ -203,91 +208,34 @@ public class StudentDatabase
 		System.out.println();
 		System.out.println("=== Student Database ===");
 		System.out.println();
-		System.out.println("1.) Display Pending Students");
+		System.out.println("1.) Display Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
 		System.out.println("4.) Remove Student");
 		System.out.println("5.) Update Grade");
 		System.out.println("6.) Save Student Data");
-		System.out.println("7.) Load Student Data");
-		System.out.println("8.) Exit");
+		System.out.println("7.) Exit");
 		System.out.println();
 		
-		HashMap<String, Student> students = new HashMap<>();
+		HashMap<String, Student> students = readFromFile("students.txt");
 		
+		Scanner sc = new Scanner(System.in);
+			
 		while (true)
 		{
 			try
 			{
-				System.out.println("Please enter a positive integer:");
+				System.out.println("Please select one of the numbers above then press enter:");
 				
-				Scanner sc = new Scanner(System.in);
-			
 				int x = Integer.parseInt(sc.nextLine());
+				System.out.println();
 				
 				if (x == 1)
-				{
-					displayStudents(students);
-				}
-				else if (x == 2)
-				{
-					System.out.println("Enter student name:");
-					
-					String stuName = sc.nextLine();
-					
-					System.out.println("Enter student grade");
-					
-					int stuGrade = sc.nextInt();
-					sc.nextLine();
-					
-					addStudent(students, stuName, stuGrade);
-					
-				}	
-				else if (x == 3)
-				{
-					System.out.println("Enter student name:");
-					
-					String stuName = sc.nextLine();
-					
-					System.out.println("Enter new student name");
-					
-					String newStuName = sc.nextLine();
-					
-					renameStudent(students, stuName, newStuName);
-				}
-				else if (x == 4)
-				{
-					System.out.println("Enter student name:");
-					
-					String stuName = sc.nextLine();
-					
-					removeStudent(students, stuName);
-				}
-				else if (x == 5)
-				{
-					System.out.println("Enter student name:");
-					
-					String stuName = sc.nextLine();
-					
-					System.out.println("Enter student grade");
-					
-					int stuGrade = sc.nextInt();
-					sc.nextLine();
-					
-					updateGrade(students, stuName, stuGrade);
-				}
-				else if (x == 6)
-				{
-					System.out.println("Student Data Updated");
-					
-					updateFile(students, "students.txt");
-				}
-				else if (x == 7)
 				{
 					System.out.println("Showing Student Data:");
 					System.out.println();
 					
-					students = readFromFile("students.txt");
+					//students = readFromFile("students.txt");			// Still experimenting here
 					
 					if (students.size() != 0)
 					{
@@ -298,9 +246,72 @@ public class StudentDatabase
 						System.out.println("No entries exist for this file");
 					}
 				}
-				else if (x == 8)
+				else if (x == 2)
 				{
-					System.out.println("Thank you, good bye");
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("\tEnter student grade:");
+					System.out.print("\t  ");
+					
+					int stuGrade = sc.nextInt();
+					sc.nextLine();
+					
+					addStudent(students, stuName, stuGrade);
+					System.out.println();
+				}	
+				else if (x == 3)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("\tEnter new student name:");
+					System.out.print("\t  ");
+					
+					String newStuName = sc.nextLine();
+					
+					renameStudent(students, stuName, newStuName);
+					System.out.println();
+				}
+				else if (x == 4)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					removeStudent(students, stuName);
+				}
+				else if (x == 5)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					System.out.println("\tEnter student grade:");
+					System.out.print("\t  ");
+					
+					int stuGrade = sc.nextInt();
+					sc.nextLine();
+					
+					updateGrade(students, stuName, stuGrade);
+					System.out.println();
+				}
+				else if (x == 6)
+				{
+					System.out.println("\tStudent Data Updated");
+					
+					updateFile(students, "students.txt");
+					System.out.println();
+				}
+				else if (x == 7)
+				{
+					System.out.println("\tThank you, good bye");
 					break;
 				}
 				else
