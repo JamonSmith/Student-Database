@@ -105,6 +105,9 @@ public class StudentDatabase
 		{
 			curr.setName(newName);
 			student.put(newName, curr);
+			System.out.println("\tStudent Name Updated:");
+			System.out.print("\t  ");
+			curr.printInfo();
 		}
 		else
 		{
@@ -137,6 +140,9 @@ public class StudentDatabase
 		if (curr != null)
 		{
 			curr.setGrade(grade);
+			System.out.println("\tGrade Updated:");
+			System.out.print("\t  ");
+			curr.printInfo();
 		}
 		else
 		{
@@ -269,13 +275,23 @@ public class StudentDatabase
 					
 					String stuName = sc.nextLine();
 					
-					System.out.println("\tEnter new student name:");
-					System.out.print("\t  ");
+					Student curr = students.get(stuName);
 					
-					String newStuName = sc.nextLine();
-					
-					renameStudent(students, stuName, newStuName);
-					System.out.println();
+					if (curr != null)
+					{
+						System.out.println("\tEnter new student name:");
+						System.out.print("\t  ");
+						
+						String newStuName = sc.nextLine();
+						
+						renameStudent(students, stuName, newStuName);
+						System.out.println();
+					}
+					else
+					{
+						System.out.println("\t" + stuName + " not in dataset");
+						System.out.println();
+					}
 				}
 				else if (x == 4)
 				{
@@ -293,14 +309,24 @@ public class StudentDatabase
 					
 					String stuName = sc.nextLine();
 					
-					System.out.println("\tEnter student grade:");
-					System.out.print("\t  ");
+					Student curr = students.get(stuName);
 					
-					int stuGrade = sc.nextInt();
-					sc.nextLine();
-					
-					updateGrade(students, stuName, stuGrade);
-					System.out.println();
+					if (curr != null)
+					{
+						System.out.println("\tEnter student grade:");
+						System.out.print("\t  ");
+						
+						int stuGrade = sc.nextInt();
+						sc.nextLine();
+						
+						updateGrade(students, stuName, stuGrade);
+						System.out.println();
+					}
+					else
+					{
+						System.out.println("\t" + stuName + " not in dataset");
+						System.out.println();
+					}
 				}
 				else if (x == 6)
 				{
@@ -311,17 +337,34 @@ public class StudentDatabase
 				}
 				else if (x == 7)
 				{
-					System.out.println("\tThank you, good bye");
-					break;
+					System.out.println("\tAre you sure you want to exit?");
+					System.out.println("\tMake sure your database changes have been saved before continuing");
+					System.out.print("\t  ");
+					
+					String quit = sc.nextLine().toLowerCase();
+					System.out.println();
+					
+					if (quit.equals("yes"))
+					{
+						System.out.println("\tThank you, good bye");
+						break;
+					}
+					else
+					{
+						System.out.println("\tBack to Main Menu");
+						System.out.println();
+					}
 				}
 				else
 				{
-					System.out.println("Invalid command, please select one of the numbers above");
+					System.out.println("\tInvalid command, please select one of the numbers above");
 				}
 			}
 			catch (NumberFormatException e)
 			{
-				System.out.println("Cannot convert that input to a numeric value");
+				System.out.println();
+				System.out.println("\tCannot convert that input to a numeric value");
+				System.out.println();
 			}
 		}
 	}
