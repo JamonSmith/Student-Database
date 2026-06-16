@@ -273,8 +273,6 @@ public class StudentDatabase
 					System.out.println("Showing Student Data:");
 					System.out.println();
 					
-					//students = readFromFile("students.txt");			// Still experimenting here
-					
 					if (students.size() != 0)
 					{
 						displayStudents(students);
@@ -389,11 +387,6 @@ public class StudentDatabase
 				}
 				else if (x == 7)
 				{
-					
-					
-					
-					
-					
 					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
 					System.out.print("\t  ");
 					
@@ -440,12 +433,6 @@ public class StudentDatabase
 						System.out.println("\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter");
 						System.out.println();
 					}
-					
-					
-					
-					
-					
-					
 				}
 				else if (x == 0)
 				{
@@ -468,7 +455,6 @@ public class StudentDatabase
 							System.out.println("\tBack to Main Menu");
 							System.out.println();
 						}
-					
 					}
 					else
 					{
@@ -479,6 +465,7 @@ public class StudentDatabase
 				else
 				{
 					System.out.println("\tInvalid command, please select one of the numbers above");
+					System.out.println();
 				}
 			}
 			catch (NumberFormatException e)
