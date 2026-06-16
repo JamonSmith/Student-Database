@@ -10,21 +10,16 @@ import java.io.PrintWriter;
 class Student implements Comparable<Student>
 {
 	private String name;
-	private int grade;
+	private HashMap<String, Double> transcript = new HashMap<>();
 	
-	Student(String name, int grade)
+	Student(String name)
 	{
-		this.name = name;
+		if (name.isEmpty() == true)
+		{
+			throw new IllegalArgumentException("Student not found in records"
+		}
 		
-		if (grade > 100)
-		{
-			grade = 100;
-		}
-		else if (grade < 0)
-		{
-			grade = 0;
-		}
-		this.grade = grade;
+		this.name = name;
 	}
 	
 	public void setName(String name)
@@ -37,23 +32,42 @@ class Student implements Comparable<Student>
 		return name;
 	}
 	
-	public void setGrade(int grade)
+	public void updateTranscript(String course, Double grade)
 	{
-		if (grade > 100)
+		if (course.isEmpty() == true)
 		{
-			grade = 100;
-		}
-		else if (grade < 0)
-		{
-			grade = 0;
+			throw new IllegalArgumentException("Student has not taken course yet");
 		}
 		
-		this.grade = grade;
+		if (grade > 100.0)
+		{
+			grade = 100.0;
+		}
+		else if (grade < 0.0)
+		{
+			grade = 0.0;
+		}
+		
+		transcript.put(course, grade);
 	}
 	
-	public int getGrade()
+	public double getAverage()
 	{
-		return grade;
+		double sum = 0.0;
+		
+		if (transcript.size() == 0)
+		{
+			return 0.0;
+		}
+		else
+		{	
+			for (Double s : transcript.values())
+			{
+				sum += s;
+			}
+			
+			return sum / transcript.size();
+		}
 	}
 	
 	public int compareTo(Student other)
@@ -63,7 +77,8 @@ class Student implements Comparable<Student>
 	
 	public void printInfo()
 	{
-		System.out.println(name + " : " + grade);
+		System.out.println(name);
+		System.out.println(transcript);
 	}
 }
 
