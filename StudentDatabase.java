@@ -9,17 +9,33 @@ import java.io.PrintWriter;
 
 class Student implements Comparable<Student>
 {
+	public static final String RESET = "\u001B[0m";
+	public static final String RED = "\u001B31m";
+	public static final String GREEN = "\u001B[32m";
+	public static final String YELLOW = "\u001B[33m";
+	public static final String BLUE = "\u001B[34m";
+	public static final String PURPLE = "\u001B[35m";
+	public static final String CYAN = "\u001B[36m";
+
+	
 	private String name;
+	private int id;
 	private HashMap<String, Double> transcript = new HashMap<>();
 	
-	Student(String name)
+	Student(String name, int id)
 	{
 		if (name.isEmpty() == true)
 		{
-			throw new IllegalArgumentException("Student not found in records"
+			throw new IllegalArgumentException("Student not found in records");
+		}
+		
+		if (id > 99999 || id < 10000)
+		{
+			throw new IllegalArgumentException("Invalid id number");
 		}
 		
 		this.name = name;
+		this.id = id;
 	}
 	
 	public void setName(String name)
@@ -32,11 +48,40 @@ class Student implements Comparable<Student>
 		return name;
 	}
 	
-	public void updateTranscript(String course, Double grade)
+	public void setID(int id)
+	{
+		this.id = id;
+	}
+	
+	public int getID()
+	{
+		return id;
+	}
+	
+	public void removeCourse(HashMap<String, Student> student, String course)
+	{
+		Student rm = student.remove(course);
+		
+		if (rm == null)
+		{
+			System.out.print("Removed:\t\t");
+			rm.printInfo();
+			System.out.println();
+		}
+		else
+		{
+			System.out.println("\t" + course + " not in dataset");
+			System.out.println();
+		}
+	}
+	/*
+	*/
+	
+	public void updateTranscript(String course, double grade)
 	{
 		if (course.isEmpty() == true)
 		{
-			throw new IllegalArgumentException("Student has not taken course yet");
+			throw new IllegalArgumentException("Must provide course name");
 		}
 		
 		if (grade > 100.0)
@@ -72,20 +117,41 @@ class Student implements Comparable<Student>
 	
 	public int compareTo(Student other)
 	{
-		return other.grade - this.grade;
+		return Double.compare(other.getAverage(), this.getAverage());
 	}
 	
 	public void printInfo()
 	{
-		System.out.println(name);
-		System.out.println(transcript);
+		System.out.println();
+		System.out.println(id + "\t\t" + CYAN + name + RESET + "\n");
+		
+		for (String s : transcript.keySet())
+		{
+			System.out.print(s + "\t\t");
+		}
+		System.out.println();
+		
+		for (double s : transcript.values())
+		{
+			System.out.print(s + "\t\t");
+		}
+		System.out.println("\n");
 	}
 }
 
 public class StudentDatabase
 {
+	public static final String RESET = "\u001B[0m";
+	public static final String RED = "\u001B[31m";
+	public static final String GREEN = "\u001B[32m";
+	public static final String YELLOW = "\u001B[33m";
+	public static final String BLUE = "\u001B[34m";
+	public static final String PURPLE = "\u001B[35m";
+	public static final String CYAN = "\u001B[36m";
+	
 	private static boolean modified = false;
 	
+	/*
 	public static Comparator<Student> nac = new Comparator<Student>()
 	{
 		public int compare(Student s1, Student s2)
@@ -98,7 +164,7 @@ public class StudentDatabase
 	{
 		public int compare(Student s1, Student s2)
 		{
-			return s1.getGrade() - s2.getGrade();
+			return s1.getAverage() - s2.getAverage();
 		}
 	};
 	
@@ -106,9 +172,10 @@ public class StudentDatabase
 	{
 		public int compare(Student s1, Student s2)
 		{
-			return s2.getGrade() - s1.getGrade();
+			return s2.getAverage() - s1.getAverage();
 		}
 	};
+	*/
 	
 	public static void displayStudents(HashMap<String, Student> student)
 	{
@@ -127,9 +194,9 @@ public class StudentDatabase
 		System.out.println();
 	}
 	
-	public static void addStudent(HashMap<String, Student> student, String name, int grade)
+	public static void addStudent(HashMap<String, Student> student, String name, int id, HashMap<String, Double> transcript)
 	{
-		Student s = new Student(name, grade);
+		Student s = new Student(name, id);
 		
 		student.put(name, s);
 		modified = true;
@@ -177,6 +244,7 @@ public class StudentDatabase
 		}
 	}
 	
+	/*
 	public static void updateGrade(HashMap<String, Student> student, String name, int grade)
 	{
 		Student curr = student.get(name);
@@ -195,6 +263,7 @@ public class StudentDatabase
 			System.out.println();
 		}
 	}
+	*/
 	
 	public static void updateFile(HashMap<String, Student> student, String str)
 	{
@@ -210,7 +279,7 @@ public class StudentDatabase
 			
 			for (Student stu : student.values())
 			{
-				p.println(stu.getName() + "," + stu.getGrade());
+				p.println(stu.getName() + "," + stu.getAverage());
 			}
 			
 			modified = false;
@@ -224,6 +293,7 @@ public class StudentDatabase
 		}
 	}
 	
+	/*
 	public static HashMap<String, Student> readFromFile(String readFile)
 	{
 		HashMap<String, Student> student = new HashMap<>();
@@ -255,12 +325,44 @@ public class StudentDatabase
 		
 		return student;
 	}
+	*/
 	
 	public static void main(String[] args)
-	{
+	{	
 		System.out.println();
-		System.out.println("=== Student Database ===");
+		System.out.println(GREEN + "==== Student Database ====" + RESET);
 		System.out.println();
+		
+		HashMap<String, Student> students = new HashMap<>();
+		
+		Student jamon = new Student("Jamon", 10001);
+		
+		students.put("Jamon", jamon);
+		
+		jamon.updateTranscript("Math", 100.0);
+		jamon.updateTranscript("Science", 95.0);
+		jamon.updateTranscript("History", 90.0);
+		
+		Student anthony = new Student("Anthony", 10002);
+		
+		students.put("Anthony", anthony);
+		
+		
+		for (String s : students.keySet())
+		{
+			students.get(s).printInfo();
+			System.out.println("Student Average:\t" + students.get(s).getAverage());
+		}
+		
+		students.get("Jamon").removeCourse(students.get("Jamon").transcript, "History");
+		
+		for (String s : students.keySet())
+		{
+			students.get(s).printInfo();
+			System.out.println("Student Average:\t" + students.get(s).getAverage());
+		}
+		
+		/*
 		System.out.println("1.) Display Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
@@ -490,5 +592,6 @@ public class StudentDatabase
 				System.out.println();
 			}
 		}
+		*/
 	}
 }
