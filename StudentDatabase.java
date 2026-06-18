@@ -58,24 +58,22 @@ class Student implements Comparable<Student>
 		return id;
 	}
 	
-	public void removeCourse(HashMap<String, Student> student, String course)
+	public void removeCourse(String course)
 	{
-		Student rm = student.remove(course);
+		Double rm = transcript.remove(course);
+
 		
-		if (rm == null)
+		if (rm != null)
 		{
-			System.out.print("Removed:\t\t");
-			rm.printInfo();
+			System.out.print("Course Removed");
 			System.out.println();
 		}
 		else
 		{
-			System.out.println("\t" + course + " not in dataset");
+			System.out.println("\t" + course + " not taken by this student");
 			System.out.println();
 		}
 	}
-	/*
-	*/
 	
 	public void updateTranscript(String course, double grade)
 	{
@@ -96,6 +94,18 @@ class Student implements Comparable<Student>
 		transcript.put(course, grade);
 	}
 	
+	public double getCourseGrade(String course)
+	{
+		Double grade = transcript.get(course);
+		
+		if (grade != null)
+		{
+			return grade;
+		}
+		
+		return 0.0;
+	}
+	
 	public double getAverage()
 	{
 		double sum = 0.0;
@@ -113,6 +123,18 @@ class Student implements Comparable<Student>
 			
 			return sum / transcript.size();
 		}
+	}
+	
+	public boolean hasCourse(String course)
+	{
+		Double curr = transcript.get(course);
+		
+		if (curr != null)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public int compareTo(Student other)
@@ -354,13 +376,24 @@ public class StudentDatabase
 			System.out.println("Student Average:\t" + students.get(s).getAverage());
 		}
 		
-		students.get("Jamon").removeCourse(students.get("Jamon").transcript, "History");
+		System.out.println();
+		System.out.println("============================================================");
+		System.out.println(YELLOW + "Debugging attempt\n" + RESET);
+		
+		students.get("Jamon").removeCourse("History");
 		
 		for (String s : students.keySet())
 		{
 			students.get(s).printInfo();
 			System.out.println("Student Average:\t" + students.get(s).getAverage());
 		}
+		
+		System.out.println();
+		System.out.println("============================================================");
+		System.out.println(YELLOW + "Debugging attempt\n" + RESET);
+		
+		System.out.println("Jamon\'s Math course grade: " + GREEN + students.get("Jamon").getCourseGrade("English") + RESET);
+		System.out.println("Jamon\'s takes English: " + RED + students.get("Jamon").hasCourse("English") + RESET);
 		
 		/*
 		System.out.println("1.) Display Students");
