@@ -16,7 +16,6 @@ class Student implements Comparable<Student>
 	public static final String BLUE = "\u001B[34m";
 	public static final String PURPLE = "\u001B[35m";
 	public static final String CYAN = "\u001B[36m";
-
 	
 	private String name;
 	private int id;
@@ -58,6 +57,18 @@ class Student implements Comparable<Student>
 		return id;
 	}
 	
+	public boolean hasCourse(String course)
+	{
+		Double curr = transcript.get(course);
+		
+		if (curr != null)
+		{
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public void removeCourse(String course)
 	{
 		Double rm = transcript.remove(course);
@@ -65,7 +76,7 @@ class Student implements Comparable<Student>
 		
 		if (rm != null)
 		{
-			System.out.print("Course Removed");
+			System.out.print("Course: " + course + " removed");
 			System.out.println();
 		}
 		else
@@ -75,23 +86,29 @@ class Student implements Comparable<Student>
 		}
 	}
 	
-	public void updateTranscript(String course, double grade)
+	public void addCourse(String course, double grade)
 	{
 		if (course.isEmpty() == true)
 		{
 			throw new IllegalArgumentException("Must provide course name");
 		}
-		
-		if (grade > 100.0)
+		else if (hasCourse(course))
 		{
-			grade = 100.0;
+			System.out.println(name + " already has course: " + course);
 		}
-		else if (grade < 0.0)
+		else
 		{
-			grade = 0.0;
+			if (grade > 100.0)
+			{
+				grade = 100.0;
+			}
+			else if (grade < 0.0)
+			{
+				grade = 0.0;
+			}
+			
+			transcript.put(course, grade);
 		}
-		
-		transcript.put(course, grade);
 	}
 	
 	public double getCourseGrade(String course)
@@ -125,18 +142,6 @@ class Student implements Comparable<Student>
 		}
 	}
 	
-	public boolean hasCourse(String course)
-	{
-		Double curr = transcript.get(course);
-		
-		if (curr != null)
-		{
-			return true;
-		}
-		
-		return false;
-	}
-	
 	public int compareTo(Student other)
 	{
 		return Double.compare(other.getAverage(), this.getAverage());
@@ -149,13 +154,8 @@ class Student implements Comparable<Student>
 		
 		for (String s : transcript.keySet())
 		{
-			System.out.print(s + "\t\t");
-		}
-		System.out.println();
-		
-		for (double s : transcript.values())
-		{
-			System.out.print(s + "\t\t");
+			System.out.println(s + "\t: " + transcript.get(s) + "\n");
+
 		}
 		System.out.println("\n");
 	}
@@ -216,7 +216,24 @@ public class StudentDatabase
 		System.out.println();
 	}
 	
-	public static void addStudent(HashMap<String, Student> student, String name, int id, HashMap<String, Double> transcript)
+	public static boolean studentExists(HashMap<String, Student> student, String name)
+	{
+		Student curr = student.get(name);
+		
+		if (curr != null)
+		{
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean courseExistsForStudent(HashMap<String, Student> student, String name, String course)
+	{
+		return student.get(name).hasCourse(course);
+	}
+	
+	public static void addStudent(HashMap<String, Student> student, String name, int id)
 	{
 		Student s = new Student(name, id);
 		
@@ -286,6 +303,51 @@ public class StudentDatabase
 		}
 	}
 	*/
+	
+	public static void addCourseToStudent(HashMap<String, Student> student, String name, String course, double grade)
+	{
+		if (!studentExists(student, name))
+		{
+			System.out.println(CYAN + name + RESET + " does not exist in our records.");
+		}
+		else
+		{
+			student.get(name).addCourse(course, grade);
+		}
+	}
+	
+	public static void showCourseGradeForStudent(HashMap<String, Student> student, String name, String course)
+	{
+		if (!studentExists(student, name))
+		{
+			System.out.println(CYAN + name + RESET + " does not exist in our records.");
+			return;
+		}
+		
+		boolean courseWasTaken = courseExistsForStudent(student, name, course);
+		
+		if (courseWasTaken)
+		{
+			Double curr = student.get(name).getCourseGrade(course);
+			System.out.println(name + "\'s " + course + " grade: " + GREEN + curr + RESET);
+		}
+		else
+		{
+			System.out.println(name + " has not taken " + PURPLE + course + RESET);
+		}
+	}
+	
+	public static void removeCourseFromStudent(HashMap<String, Student> student, String name, String course)
+	{
+		if (!studentExists(student, name))
+		{
+			System.out.println(CYAN + name + RESET + " does not exist in our records.");
+		}
+		else 
+		{
+			student.get(name).removeCourse(course);
+		}
+	}
 	
 	public static void updateFile(HashMap<String, Student> student, String str)
 	{
@@ -357,18 +419,30 @@ public class StudentDatabase
 		
 		HashMap<String, Student> students = new HashMap<>();
 		
-		Student jamon = new Student("Jamon", 10001);
+		addStudent(students, "Jamon", 10001);
 		
-		students.put("Jamon", jamon);
-		
-		jamon.updateTranscript("Math", 100.0);
-		jamon.updateTranscript("Science", 95.0);
-		jamon.updateTranscript("History", 90.0);
+		addCourseToStudent(students, "Jamon", "Math", 100.0);
+		addCourseToStudent(students, "Jamon", "Science", 95.0);
+		addCourseToStudent(students, "Jamon", "History", 90.0);
+		addCourseToStudent(students, "Jamona", "History", 90.0);
 		
 		Student anthony = new Student("Anthony", 10002);
 		
 		students.put("Anthony", anthony);
 		
+		for (String s : students.keySet())
+		{
+			students.get(s).printInfo();
+			System.out.println("Student Average:\t" + students.get(s).getAverage());
+		}
+		
+		System.out.println(GREEN + "== Successful ==\n" + RESET);
+		
+		System.out.println();
+		System.out.println("============================================================");
+		System.out.println(YELLOW + "Remove Course attempt\n" + RESET);
+		
+		removeCourseFromStudent(students, "Jamon", "History");
 		
 		for (String s : students.keySet())
 		{
@@ -376,24 +450,37 @@ public class StudentDatabase
 			System.out.println("Student Average:\t" + students.get(s).getAverage());
 		}
 		
+		System.out.println(GREEN + "== Successful ==\n" + RESET);
+	
 		System.out.println();
 		System.out.println("============================================================");
-		System.out.println(YELLOW + "Debugging attempt\n" + RESET);
+		System.out.println(YELLOW + "Rename Student attempt\n" + RESET);
 		
-		students.get("Jamon").removeCourse("History");
+		System.out.println(PURPLE + "Before\n" + RESET);
+		students.get("Jamon").printInfo();
 		
-		for (String s : students.keySet())
-		{
-			students.get(s).printInfo();
-			System.out.println("Student Average:\t" + students.get(s).getAverage());
-		}
+		System.out.println(PURPLE + "After\n" + RESET);
+		renameStudent(students, "Jamon", "Amon");
+		
+		System.out.println(GREEN + "== Successful ==\n" + RESET);
 		
 		System.out.println();
 		System.out.println("============================================================");
-		System.out.println(YELLOW + "Debugging attempt\n" + RESET);
+		System.out.println(YELLOW + "Add Course to Student attempt\n" + RESET);
 		
-		System.out.println("Jamon\'s Math course grade: " + GREEN + students.get("Jamon").getCourseGrade("English") + RESET);
-		System.out.println("Jamon\'s takes English: " + RED + students.get("Jamon").hasCourse("English") + RESET);
+		addCourseToStudent(students, "Amon", "Math", 99);
+		addCourseToStudent(students, "Amon", "Civics", 99);
+		students.get("Amon").printInfo();
+		
+		System.out.println(GREEN + "== Successful ==\n" + RESET);
+		
+		System.out.println();
+		System.out.println("============================================================");
+		System.out.println(YELLOW + "Show Student course Grade attempt\n" + RESET);
+		
+		showCourseGradeForStudent(students, "Amon", "Science");
+		showCourseGradeForStudent(students, "Amon", "Math");
+		showCourseGradeForStudent(students, "Amon", "History");
 		
 		/*
 		System.out.println("1.) Display Students");
