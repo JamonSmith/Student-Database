@@ -174,7 +174,7 @@ class Student implements Comparable<Student>
 		
 		for (String s : transcript.keySet())
 		{
-			System.out.println(s + "\t: " + YELLOW + transcript.get(s) + "\n" + RESET);
+			System.out.println(YELLOW + transcript.get(s) + RESET + ":\t" + s + "\n");
 
 		}
 		System.out.println("\n");
