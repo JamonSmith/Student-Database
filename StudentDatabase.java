@@ -86,6 +86,20 @@ class Student implements Comparable<Student>
 		}
 	}
 	
+	public double clampGrade(double grade)
+	{
+		if (grade > 100.0)
+		{
+			return 100.0;
+		}
+		else if (grade < 0.0)
+		{
+			return 0.0;
+		}
+		
+		return grade;
+	}
+	
 	public void addCourse(String course, double grade)
 	{
 		if (course.isEmpty() == true)
@@ -98,16 +112,7 @@ class Student implements Comparable<Student>
 		}
 		else
 		{
-			if (grade > 100.0)
-			{
-				grade = 100.0;
-			}
-			else if (grade < 0.0)
-			{
-				grade = 0.0;
-			}
-			
-			transcript.put(course, grade);
+			transcript.put(course, clampGrade(grade));
 		}
 	}
 	
@@ -121,6 +126,16 @@ class Student implements Comparable<Student>
 		}
 		
 		return 0.0;
+	}
+	
+	public void setCourseGrade(String course, double newGrade)
+	{
+		if (course.isEmpty())
+		{
+			throw new IllegalArgumentException("Must provide course name");
+		}
+		
+		transcript.put(course, clampGrade(newGrade));
 	}
 	
 	public double getAverage()
@@ -142,6 +157,11 @@ class Student implements Comparable<Student>
 		}
 	}
 	
+	public HashMap<String, Double> getTranscript()
+	{
+		return new HashMap<>(transcript);
+	}
+	
 	public int compareTo(Student other)
 	{
 		return Double.compare(other.getAverage(), this.getAverage());
@@ -154,7 +174,7 @@ class Student implements Comparable<Student>
 		
 		for (String s : transcript.keySet())
 		{
-			System.out.println(s + "\t: " + transcript.get(s) + "\n");
+			System.out.println(s + "\t: " + YELLOW + transcript.get(s) + "\n" + RESET);
 
 		}
 		System.out.println("\n");
@@ -283,27 +303,6 @@ public class StudentDatabase
 		}
 	}
 	
-	/*
-	public static void updateGrade(HashMap<String, Student> student, String name, int grade)
-	{
-		Student curr = student.get(name);
-		
-		if (curr != null)
-		{
-			curr.setGrade(grade);
-			modified = true;
-			System.out.println("\tGrade Updated:");
-			System.out.print("\t  ");
-			curr.printInfo();
-		}
-		else
-		{
-			System.out.println("\t" + name + " not in dataset");
-			System.out.println();
-		}
-	}
-	*/
-	
 	public static void addCourseToStudent(HashMap<String, Student> student, String name, String course, double grade)
 	{
 		if (!studentExists(student, name))
@@ -337,6 +336,30 @@ public class StudentDatabase
 		}
 	}
 	
+	public static void updateCourseGradeForStudent(HashMap<String, Student> student, String name, String course, double newGrade)
+	{
+		if (!studentExists(student, name))
+		{
+			System.out.println(CYAN + name + RESET + " does not exist in our records.");
+			return;
+		}
+		
+		boolean courseWasTaken = courseExistsForStudent(student, name, course);
+		
+		if (courseWasTaken)
+		{		
+			double currGrade = student.get(name).getCourseGrade(course);
+			double ng = student.get(name).clampGrade(newGrade);
+			
+			System.out.println(PURPLE + course + RESET + " grade changed from " + GREEN + currGrade + RESET + " to " + GREEN + ng + RESET);
+			student.get(name).setCourseGrade(course, newGrade);
+		}
+		else
+		{
+			System.out.println(name + " has not taken " + PURPLE + course + RESET);
+		}
+	}
+	
 	public static void removeCourseFromStudent(HashMap<String, Student> student, String name, String course)
 	{
 		if (!studentExists(student, name))
@@ -363,7 +386,12 @@ public class StudentDatabase
 			
 			for (Student stu : student.values())
 			{
-				p.println(stu.getName() + "," + stu.getAverage());
+				for (String course : stu.getTranscript().keySet())
+				{
+					double grade = stu.getTranscript().get(course);
+					
+					p.println(stu.getName() + "," + stu.getID() + "," + course + "," + grade);
+				}
 			}
 			
 			modified = false;
@@ -377,9 +405,14 @@ public class StudentDatabase
 		}
 	}
 	
-	/*
 	public static HashMap<String, Student> readFromFile(String readFile)
 	{
+		if (!readFile.endsWith(".txt"))
+		{
+			System.out.println("Incorrect file format");
+			return new HashMap<>();
+		}
+		
 		HashMap<String, Student> student = new HashMap<>();
 		
 		try
@@ -394,10 +427,21 @@ public class StudentDatabase
 				String[] fields = str.split(",");
 				
 				String name = fields[0];
-				int grade = Integer.parseInt(fields[1]);
+				int id = Integer.parseInt(fields[1]);
+				String course = fields[2];
+				double grade = Double.parseDouble(fields[3]);
 				
-				Student s = new Student(name, grade);
-				student.put(name, s);
+				if (student.containsKey(name))
+				{
+					student.get(name).addCourse(course, grade);
+				}
+				else
+				{
+					Student s = new Student(name, id);
+					student.put(name, s);
+					
+					s.addCourse(course, grade);
+				}
 			}
 			
 			sc.close();
@@ -409,16 +453,9 @@ public class StudentDatabase
 		
 		return student;
 	}
-	*/
 	
-	public static void main(String[] args)
-	{	
-		System.out.println();
-		System.out.println(GREEN + "==== Student Database ====" + RESET);
-		System.out.println();
-		
-		HashMap<String, Student> students = new HashMap<>();
-		
+	public static void testAllFunctions(HashMap<String, Student> students)
+	{
 		addStudent(students, "Jamon", 10001);
 		
 		addCourseToStudent(students, "Jamon", "Math", 100.0);
@@ -482,17 +519,64 @@ public class StudentDatabase
 		showCourseGradeForStudent(students, "Amon", "Math");
 		showCourseGradeForStudent(students, "Amon", "History");
 		
-		/*
-		System.out.println("1.) Display Students");
+		System.out.println(GREEN + "== Successful ==\n" + RESET);
+		
+		System.out.println();
+		System.out.println("============================================================");
+		System.out.println(YELLOW + "Update Student Course Grade attempt\n" + RESET);
+		
+		students.get("Amon").printInfo();
+		
+		updateCourseGradeForStudent(students, "Amon", "Science", 800.0);
+		updateCourseGradeForStudent(students, "Jamon", "Science", 80.0);
+		updateCourseGradeForStudent(students, "Amon", "Sciece", 80.0);
+		
+		students.get("Amon").printInfo();
+	}
+	
+	public static void main(String[] args)
+	{	
+		System.out.println();
+		System.out.println(GREEN + "==== Student Database ====" + RESET);
+		System.out.println();
+		
+		HashMap<String, Student> students = new HashMap<>();
+		
+		addStudent(students, "Jamon", 10001);
+		
+		addCourseToStudent(students, "Jamon", "Intro to Comp Sci", 100.0);
+		addCourseToStudent(students, "Jamon", "Data Structures", 89.0);
+		addCourseToStudent(students, "Jamon", "Computer Graphics", 92.0);
+		addCourseToStudent(students, "Jamon", "Object Oriented Programming", 98.0);
+		addCourseToStudent(students, "Jamon", "Artifical Intelligence I", 89.0);
+		addCourseToStudent(students, "Jamon", "Data Mining", 95.0);
+		
+		updateFile(students, "students.txt");
+		
+		HashMap<String, Student> studentsCopy = readFromFile("students.txt");
+		
+		for (Student stu : studentsCopy.values())
+		{
+			stu.printInfo();
+			System.out.println();
+			System.out.println(GREEN + "Student " + stu.getID() + CYAN + " " + stu.getName() + RESET + " grade Average: " + stu.getAverage());
+			System.out.println("\n");
+		}
+		
+		System.out.println("1.) Display All Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
 		System.out.println("4.) Remove Student");
-		System.out.println("5.) Update Grade");
-		System.out.println("6.) Save Student Data");
-		System.out.println("7.) Sort Students");
-		System.out.println("0.) Exit");
+		System.out.println("5.) Add Course to Student");
+		System.out.println("6.) Update Student Course Grade");
+		System.out.println("7.) Remove Student Course Grade");
+		System.out.println("8.) Show Student Course Grade");
+		System.out.println("9.) Sort Students");
+		System.out.println("0.) Save Student Data");
+		System.out.println("-1.) Exit");
 		System.out.println();
 		
+		/*
 		HashMap<String, Student> students = readFromFile("students.txt");
 		Scanner sc = new Scanner(System.in);
 			
@@ -615,13 +699,7 @@ public class StudentDatabase
 						System.out.println();
 					}
 				}
-				else if (x == 6)
-				{
-					System.out.println("\tStudent Data Updated");
-					
-					updateFile(students, "students.txt");
-					System.out.println();
-				}
+				//
 				else if (x == 7)
 				{
 					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
@@ -671,7 +749,15 @@ public class StudentDatabase
 						System.out.println();
 					}
 				}
+				//
 				else if (x == 0)
+				{
+					System.out.println("\tStudent Data Updated");
+					
+					updateFile(students, "students.txt");
+					System.out.println();
+				}
+				else if (x == -1)
 				{
 					if (modified == true)
 					{

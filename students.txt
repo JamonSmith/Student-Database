@@ -1,14 +1,6 @@
-Christine,98
-Nico,85
-Anthony,97
-Nick,70
-Devyn,92
-Donald,99
-Malik,94
-Alister,89
-Elizabeth,90
-Barbara,100
-Jamon,100
-Michael,93
-Albert,80
-Becky,82
+Jamon,10001,Computer Graphics,92.0
+Jamon,10001,Data Mining,95.0
+Jamon,10001,Intro to Comp Sci,100.0
+Jamon,10001,Object Oriented Programming,98.0
+Jamon,10001,Artifical Intelligence I,89.0
+Jamon,10001,Data Structures,89.0
