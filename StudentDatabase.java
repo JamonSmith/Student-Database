@@ -153,7 +153,9 @@ class Student implements Comparable<Student>
 				sum += s;
 			}
 			
-			return sum / transcript.size();
+			double avg = sum / transcript.size();
+			
+			return Math.round(avg * 100.0) / 100.0;
 		}
 	}
 	
@@ -169,15 +171,9 @@ class Student implements Comparable<Student>
 	
 	public void printInfo()
 	{
-		System.out.println();
-		System.out.println(id + "\t\t" + CYAN + name + RESET + "\n");
-		
-		for (String s : transcript.keySet())
-		{
-			System.out.println(YELLOW + transcript.get(s) + RESET + ":\t" + s + "\n");
-
-		}
-		System.out.println("\n");
+		System.out.print("\t\t" + GREEN + id + "\t" + RESET);
+		System.out.print(CYAN + name + "\t\t" + RESET);
+		System.out.println(getAverage() + "\n");
 	}
 }
 
@@ -193,7 +189,14 @@ public class StudentDatabase
 	
 	private static boolean modified = false;
 	
-	/*
+	public static Comparator<Student> idc = new Comparator<Student>()
+	{
+		public int compare(Student s1, Student s2)
+		{
+			return s1.getID() - s2.getID();
+		}
+	};
+	
 	public static Comparator<Student> nac = new Comparator<Student>()
 	{
 		public int compare(Student s1, Student s2)
@@ -202,38 +205,41 @@ public class StudentDatabase
 		}
 	};
 	
-	public static Comparator<Student> gac = new Comparator<Student>()
+	public static Comparator<Student> aac = new Comparator<Student>()
 	{
 		public int compare(Student s1, Student s2)
 		{
-			return s1.getAverage() - s2.getAverage();
+			return Double.compare(s1.getAverage(), s2.getAverage());
 		}
 	};
 	
-	public static Comparator<Student> gdc = new Comparator<Student>()
+	public static Comparator<Student> adc = new Comparator<Student>()
 	{
 		public int compare(Student s1, Student s2)
 		{
-			return s2.getAverage() - s1.getAverage();
+			return Double.compare(s2.getAverage(), s1.getAverage());
 		}
 	};
-	*/
 	
 	public static void displayStudents(HashMap<String, Student> student)
 	{
+		System.out.println("\tAll Students\n");
+		
 		if (student.size() == 0)
 		{
-			System.out.println("No items to print");
+			System.out.println("\t\tNo items to print");
 		}
 		else
 		{
-			for (String s : student.keySet())
+			ArrayList<Student> copy = new ArrayList<Student>(student.values());
+		
+			Collections.sort(copy, idc);
+							
+			for (Student s : copy)
 			{
-				System.out.print("\t");
-				student.get(s).printInfo();
+				s.printInfo();
 			}
 		}
-		System.out.println();
 	}
 	
 	public static boolean studentExists(HashMap<String, Student> student, String name)
@@ -246,6 +252,30 @@ public class StudentDatabase
 		}
 		
 		return false;
+	}
+	
+	public static void showOneStudent(HashMap<String, Student> student, String name)
+	{
+		if (!studentExists(student, name))
+		{
+			System.out.println(CYAN + name + RESET + " does not exist in our records.\n");
+		}
+		else
+		{
+			System.out.println("ID\t: " + GREEN + student.get(name).getID() + RESET);
+			System.out.println("Name\t: " + CYAN + student.get(name).getName() + RESET + "\n\n");
+			System.out.println("==== Courses ====\n");
+			
+			HashMap<String, Double> transcript = student.get(name).getTranscript();
+			
+			for (String course : transcript.keySet())
+			{
+				System.out.println(transcript.get(course) + "\t: " + CYAN + course + RESET + "\n");
+			}
+			
+			System.out.println();
+			System.out.println(student.get(name).getAverage() + "\t: " + PURPLE + "Average Grade\n" + RESET);
+		}
 	}
 	
 	public static boolean courseExistsForStudent(HashMap<String, Student> student, String name, String course)
@@ -261,8 +291,9 @@ public class StudentDatabase
 		modified = true;
 		
 		System.out.println("\tAdded:");
-		System.out.print("\t  ");
-		student.get(name).printInfo();
+		System.out.print("\t\t" + student.get(name).getID());
+		System.out.print("\t" + student.get(name).getName());
+		System.out.println("\n");
 	}
 	
 	public static void renameStudent(HashMap<String, Student> student, String name, String newName)
@@ -537,7 +568,9 @@ public class StudentDatabase
 	public static void main(String[] args)
 	{	
 		System.out.println();
-		System.out.println(GREEN + "==== Student Database ====" + RESET);
+		System.out.println(GREEN + "==========================");
+		System.out.println("==== Student Database ====");
+		System.out.println("==========================" + RESET);
 		System.out.println();
 		
 		HashMap<String, Student> students = new HashMap<>();
@@ -551,18 +584,46 @@ public class StudentDatabase
 		addCourseToStudent(students, "Jamon", "Artifical Intelligence I", 89.0);
 		addCourseToStudent(students, "Jamon", "Data Mining", 95.0);
 		
+		addStudent(students, "Anthony", 10002);
+		
+		addCourseToStudent(students, "Anthony", "Intro to Comp Sci", 100.0);
+		addCourseToStudent(students, "Anthony", "Data Structures", 92.0);
+		addCourseToStudent(students, "Anthony", "Computer Graphics", 91.0);
+		addCourseToStudent(students, "Anthony", "Object Oriented Programming", 95.0);
+		addCourseToStudent(students, "Anthony", "Artifical Intelligence I", 85.0);
+		addCourseToStudent(students, "Anthony", "Data Mining", 90.0);
+		
+		addStudent(students, "Alister", 10003);
+		
+		addCourseToStudent(students, "Alister", "Intro to Comp Sci", 95.0);
+		addCourseToStudent(students, "Alister", "Data Structures", 86.0);
+		addCourseToStudent(students, "Alister", "Computer Graphics", 94.0);
+		addCourseToStudent(students, "Alister", "Object Oriented Programming", 90.0);
+		addCourseToStudent(students, "Alister", "Artifical Intelligence I", 82.0);
+		addCourseToStudent(students, "Alister", "Data Mining", 86.0);
+		
 		updateFile(students, "students.txt");
 		
-		HashMap<String, Student> studentsCopy = readFromFile("students.txt");
+		//HashMap<String, Student> studentsCopy = readFromFile("students.txt");
 		
-		for (Student stu : studentsCopy.values())
+		System.out.println(RED + "Unsorted: (By ID #)" + RESET);
+		
+		displayStudents(students);
+		System.out.println();
+		
+		System.out.println(RED + "Sorted: (By name)" + RESET);
+		
+		ArrayList<Student> studentsCopy = new ArrayList<Student>(students.values());
+		
+		Collections.sort(studentsCopy, nac);
+						
+		for (Student s : studentsCopy)
 		{
-			stu.printInfo();
-			System.out.println();
-			System.out.println(GREEN + "Student " + stu.getID() + CYAN + " " + stu.getName() + RESET + " grade Average: " + stu.getAverage());
-			System.out.println("\n");
+			s.printInfo();
 		}
+		System.out.println();
 		
+		/*
 		System.out.println("1.) Display All Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
@@ -575,6 +636,11 @@ public class StudentDatabase
 		System.out.println("0.) Save Student Data");
 		System.out.println("-1.) Exit");
 		System.out.println();
+		
+		//showOneStudent(students, "Anthony");
+		
+		//showOneStudent(students, "Jamon");
+		*/
 		
 		/*
 		HashMap<String, Student> students = readFromFile("students.txt");

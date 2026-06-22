@@ -1,3 +1,15 @@
+Alister,10003,Computer Graphics,94.0
+Alister,10003,Data Mining,86.0
+Alister,10003,Intro to Comp Sci,95.0
+Alister,10003,Object Oriented Programming,90.0
+Alister,10003,Artifical Intelligence I,82.0
+Alister,10003,Data Structures,86.0
+Anthony,10002,Computer Graphics,91.0
+Anthony,10002,Data Mining,90.0
+Anthony,10002,Intro to Comp Sci,100.0
+Anthony,10002,Object Oriented Programming,95.0
+Anthony,10002,Artifical Intelligence I,85.0
+Anthony,10002,Data Structures,92.0
 Jamon,10001,Computer Graphics,92.0
 Jamon,10001,Data Mining,95.0
 Jamon,10001,Intro to Comp Sci,100.0
