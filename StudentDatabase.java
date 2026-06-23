@@ -454,8 +454,16 @@ public class StudentDatabase
 		
 		try
 		{
-			Scanner sc = new Scanner(new File(readFile));
+			File f = new File(readFile);
 			
+			if (!f.exists())
+			{
+				System.out.println(YELLOW + "No database found. Creating new database for students" + RESET);
+				
+				return new HashMap<>();
+			}
+			
+			Scanner sc = new Scanner(f);
 			
 			while (sc.hasNextLine())
 			{
