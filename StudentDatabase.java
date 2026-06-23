@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.io.IOException;
 import java.io.File;
 import java.io.PrintWriter;
@@ -23,16 +24,6 @@ class Student implements Comparable<Student>
 	
 	Student(String name, int id)
 	{
-		if (name.isEmpty() == true)
-		{
-			throw new IllegalArgumentException("Student not found in records");
-		}
-		
-		if (id > 99999 || id < 10000)
-		{
-			throw new IllegalArgumentException("Invalid id number");
-		}
-		
 		this.name = name;
 		this.id = id;
 	}
@@ -576,7 +567,16 @@ public class StudentDatabase
 					
 					String stuName = sc.nextLine();
 					
-					if (!studentExists(students, stuName))
+					if (studentExists(students, stuName))
+					{
+						System.out.println("\t" + stuName + " is already in the system");
+						System.out.println();
+					}
+					else if (stuName.isEmpty())
+					{
+						System.out.println(RED + "Student name must be provided\n" + RESET);
+					}
+					else 
 					{
 						System.out.println("\tEnter student ID number:");
 						System.out.print("\t  ");
@@ -584,13 +584,15 @@ public class StudentDatabase
 						int stuID = sc.nextInt();
 						sc.nextLine();
 						
-						addStudent(students, stuName, stuID);
-						System.out.println();
-					}
-					else 
-					{
-						System.out.println("\t" + stuName + " is already in the system");
-						System.out.println();
+						if (stuID < 10001 || stuID > 99999)
+						{
+							System.out.println(RED + "Student ID number must be within range [10001, 99999]\n" + RESET);
+						}
+						else
+						{
+							addStudent(students, stuName, stuID);
+							System.out.println();
+						}
 					}
 				}
 				else if (x == 4)
