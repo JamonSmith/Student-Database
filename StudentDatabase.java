@@ -278,6 +278,15 @@ public class StudentDatabase
 	
 	public static void addStudent(HashMap<String, Student> student, String name, int id)
 	{
+		for (Student stu : student.values())
+		{
+			if (stu.getID() == id)
+			{
+				System.out.println(RED + "\tID number: " + RESET + id + RED + " already taken\n" + RESET);
+				return;
+			}
+		}
+		
 		Student s = new Student(name, id);
 		
 		student.put(name, s);
