@@ -524,7 +524,7 @@ public class StudentDatabase
 		System.out.println("5.) Remove Student");
 		System.out.println("6.) Add Course to Student");
 		System.out.println("7.) Update Student Course Grade");
-		System.out.println("8.) Remove Student Course Grade");
+		System.out.println("8.) Remove Course");
 		System.out.println("9.) Sort Students");
 		System.out.println("0.) Save Student Data");
 		System.out.println("-1.) Exit");
@@ -581,17 +581,25 @@ public class StudentDatabase
 						System.out.println("\tEnter student ID number:");
 						System.out.print("\t  ");
 						
-						int stuID = sc.nextInt();
-						sc.nextLine();
-						
-						if (stuID < 10001 || stuID > 99999)
-						{
-							System.out.println(RED + "Student ID number must be within range [10001, 99999]\n" + RESET);
+						try
+						{		
+							int stuID = sc.nextInt();
+							sc.nextLine();
+							
+							if (stuID < 10001 || stuID > 99999)
+							{
+								System.out.println(RED + "Student ID number must be within range [10001, 99999]\n" + RESET);
+							}
+							else
+							{
+								addStudent(students, stuName, stuID);
+								System.out.println();
+							}
 						}
-						else
+						catch (InputMismatchException e)
 						{
-							addStudent(students, stuName, stuID);
-							System.out.println();
+							System.out.println(RED + "Student ID number must be a positive integer within range [10001, 99999]\n" + RESET);
+							sc.nextLine();
 						}
 					}
 				}
@@ -651,12 +659,20 @@ public class StudentDatabase
 						
 						System.out.println("\tEnter student grade:");
 						System.out.print("\t  ");
-							
-						double stuGrade = sc.nextDouble();
-						sc.nextLine();
-							
-						addCourseToStudent(students, stuName, stuCourse, stuGrade);
-						System.out.println();																															
+						
+						try 
+						{
+							double stuGrade = sc.nextDouble();
+							sc.nextLine();
+								
+							addCourseToStudent(students, stuName, stuCourse, stuGrade);
+							System.out.println();
+						}
+						catch (InputMismatchException e)
+						{
+							System.out.println(RED + "Student grade must be a number\n" + RESET);
+							sc.nextLine();
+						}
 					}
 					else
 					{
@@ -683,11 +699,19 @@ public class StudentDatabase
 							System.out.println("\tEnter new student grade:");
 							System.out.print("\t  ");
 							
-							double stuGrade = sc.nextDouble();
-							sc.nextLine();
-							
-							updateCourseGradeForStudent(students, stuName, stuCourse, stuGrade);
-							System.out.println();
+							try
+							{
+								double stuGrade = sc.nextDouble();
+								sc.nextLine();
+								
+								updateCourseGradeForStudent(students, stuName, stuCourse, stuGrade);
+								System.out.println();
+							}
+							catch (InputMismatchException e)
+							{
+								System.out.println(RED + "Student grade must be a number\n" + RESET);
+								sc.nextLine();
+							}
 						}
 						else
 						{
