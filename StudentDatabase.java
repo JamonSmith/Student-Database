@@ -758,7 +758,7 @@ public class StudentDatabase
 				}
 				else if (x == 9)
 				{
-					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
+					System.out.println("\tSort by average grade ('asc' or 'desc') or by name ('name')?");
 					System.out.print("\t  ");
 					
 					String sorting = sc.nextLine().toLowerCase();
