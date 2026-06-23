@@ -59,14 +59,7 @@ class Student implements Comparable<Student>
 	
 	public boolean hasCourse(String course)
 	{
-		Double curr = transcript.get(course);
-		
-		if (curr != null)
-		{
-			return true;
-		}
-		
-		return false;
+		return transcript.containsKey(course);
 	}
 	
 	public void removeCourse(String course)
@@ -227,7 +220,7 @@ public class StudentDatabase
 		
 		if (student.size() == 0)
 		{
-			System.out.println("\t\tNo items to print");
+			System.out.println(RED + "\t\tNo students found" + RESET);
 		}
 		else
 		{
@@ -244,14 +237,7 @@ public class StudentDatabase
 	
 	public static boolean studentExists(HashMap<String, Student> student, String name)
 	{
-		Student curr = student.get(name);
-		
-		if (curr != null)
-		{
-			return true;
-		}
-		
-		return false;
+		return student.containsKey(name);
 	}
 	
 	public static void showOneStudent(HashMap<String, Student> student, String name)
@@ -268,9 +254,16 @@ public class StudentDatabase
 			
 			HashMap<String, Double> transcript = student.get(name).getTranscript();
 			
-			for (String course : transcript.keySet())
+			if (transcript.size() > 0)
 			{
-				System.out.println(transcript.get(course) + "\t: " + CYAN + course + RESET + "\n");
+				for (String course : transcript.keySet())
+				{
+					System.out.println(transcript.get(course) + "\t: " + CYAN + course + RESET + "\n");
+				}
+			}
+			else
+			{
+				System.out.println("Student has not taken any courses yet\n");
 			}
 			
 			System.out.println();
@@ -343,6 +336,7 @@ public class StudentDatabase
 		else
 		{
 			student.get(name).addCourse(course, grade);
+			modified = true;
 		}
 	}
 	
@@ -384,6 +378,7 @@ public class StudentDatabase
 			
 			System.out.println(PURPLE + course + RESET + " grade changed from " + GREEN + currGrade + RESET + " to " + GREEN + ng + RESET);
 			student.get(name).setCourseGrade(course, newGrade);
+			modified = true;
 		}
 		else
 		{
@@ -400,6 +395,7 @@ public class StudentDatabase
 		else 
 		{
 			student.get(name).removeCourse(course);
+			modified = true;
 		}
 	}
 	
@@ -417,11 +413,20 @@ public class StudentDatabase
 			
 			for (Student stu : student.values())
 			{
-				for (String course : stu.getTranscript().keySet())
+				HashMap<String, Double> transcript = stu.getTranscript();
+				
+				if (transcript.size() > 0)
 				{
-					double grade = stu.getTranscript().get(course);
-					
-					p.println(stu.getName() + "," + stu.getID() + "," + course + "," + grade);
+					for (String course : transcript.keySet())
+					{
+						double grade = transcript.get(course);
+						
+						p.println(stu.getName() + "," + stu.getID() + "," + course + "," + grade);
+					}
+				}
+				else
+				{
+					p.println(stu.getName() + "," + stu.getID());
 				}
 			}
 			
@@ -457,21 +462,31 @@ public class StudentDatabase
 				
 				String[] fields = str.split(",");
 				
-				String name = fields[0];
-				int id = Integer.parseInt(fields[1]);
-				String course = fields[2];
-				double grade = Double.parseDouble(fields[3]);
-				
-				if (student.containsKey(name))
+				if (fields.length == 4)
 				{
+					String name = fields[0];
+					int id = Integer.parseInt(fields[1]);
+					String course = fields[2];
+					double grade = Double.parseDouble(fields[3]);
+					
+					if (!studentExists(student, name))
+					{
+						Student s = new Student(name, id);
+						student.put(name, s);
+					}
+					
 					student.get(name).addCourse(course, grade);
 				}
-				else
+				else if (fields.length == 2)
 				{
-					Student s = new Student(name, id);
-					student.put(name, s);
+					String name = fields[0];
+					int id = Integer.parseInt(fields[1]);
 					
-					s.addCourse(course, grade);
+					if (!studentExists(student, name))
+					{
+						Student s = new Student(name, id);
+						student.put(name, s);
+					}
 				}
 			}
 			
@@ -573,6 +588,7 @@ public class StudentDatabase
 		System.out.println("==========================" + RESET);
 		System.out.println();
 		
+		/*
 		HashMap<String, Student> students = new HashMap<>();
 		
 		addStudent(students, "Jamon", 10001);
@@ -603,27 +619,10 @@ public class StudentDatabase
 		addCourseToStudent(students, "Alister", "Data Mining", 86.0);
 		
 		updateFile(students, "students.txt");
-		
-		//HashMap<String, Student> studentsCopy = readFromFile("students.txt");
-		
-		System.out.println(RED + "Unsorted: (By ID #)" + RESET);
-		
-		displayStudents(students);
-		System.out.println();
-		
-		System.out.println(RED + "Sorted: (By name)" + RESET);
-		
-		ArrayList<Student> studentsCopy = new ArrayList<Student>(students.values());
-		
-		Collections.sort(studentsCopy, nac);
-						
-		for (Student s : studentsCopy)
-		{
-			s.printInfo();
-		}
-		System.out.println();
+		*/
 		
 		/*
+		*/
 		System.out.println("1.) Display All Students");
 		System.out.println("2.) Add Student");
 		System.out.println("3.) Rename Student");
@@ -637,15 +636,110 @@ public class StudentDatabase
 		System.out.println("-1.) Exit");
 		System.out.println();
 		
-		//showOneStudent(students, "Anthony");
-		
-		//showOneStudent(students, "Jamon");
-		*/
-		
-		/*
 		HashMap<String, Student> students = readFromFile("students.txt");
+		
 		Scanner sc = new Scanner(System.in);
+		
+		while (true)
+		{
+			try
+			{
+				System.out.println("Please select one of the numbers above then press enter:");
+				
+				int x = Integer.parseInt(sc.nextLine());
+				System.out.println();
+				
+				if (x == 1)
+				{
+					System.out.println("Showing Students:");
+					System.out.println();
+					
+					displayStudents(students);
+				}
+				else if (x == 2)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					System.out.println();
+					
+					showOneStudent(students, stuName);
+				}
+				else if (x == 3)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					if (!studentExists(students, stuName))
+					{
+						System.out.println("\tEnter student ID number:");
+						System.out.print("\t  ");
+						
+						int stuID = sc.nextInt();
+						sc.nextLine();
+						
+						addStudent(students, stuName, stuID);
+						System.out.println();
+					}
+					else 
+					{
+						System.out.println("\t" + stuName + " is already in the system");
+						System.out.println();
+					}
+				}
+				else if (x == 0)
+				{
+					System.out.println("\tStudent Data Updated");
+					
+					updateFile(students, "students.txt");
+					System.out.println();
+				}
+				else if (x == -1)
+				{
+					if (modified == true)
+					{
+						System.out.println("\tDatabase changes have not been saved");
+						System.out.println("\tAre you sure you want to exit?");
+						System.out.print("\t  ");
+						
+						String quit = sc.nextLine().toLowerCase();
+						System.out.println();
+						
+						if (quit.equals("yes"))
+						{
+							System.out.println("\tThank you, good bye");
+							break;
+						}
+						else
+						{
+							System.out.println("\tBack to Main Menu");
+							System.out.println();
+						}
+					}
+					else
+					{
+						System.out.println("\tThank you, good bye");
+						break;
+					}
+				}
+				else
+				{
+					System.out.println(RED + "\tInvalid command, please select one of the numbers above" + RESET);
+					System.out.println();
+				}
+			}
+			catch (NumberFormatException e)
+			{
+				System.out.println();
+				System.out.println(RED + "\tCannot convert that input to a numeric value" + RESET);
+				System.out.println();
+			}
+		}
 			
+		/*
 		while (true)
 		{
 			try
