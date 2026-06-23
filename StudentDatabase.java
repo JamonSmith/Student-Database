@@ -317,7 +317,8 @@ public class StudentDatabase
 			modified = true;
 			System.out.println("\tRemoved: ");
 			System.out.print("\t  ");
-			rm.printInfo();
+			System.out.print("\t\t" + GREEN + rm.getID() + "\t" + RESET);
+			System.out.print(CYAN + rm.getName() + "\n" + RESET);
 			System.out.println();
 		}
 		else
@@ -588,49 +589,14 @@ public class StudentDatabase
 		System.out.println("==========================" + RESET);
 		System.out.println();
 		
-		/*
-		HashMap<String, Student> students = new HashMap<>();
-		
-		addStudent(students, "Jamon", 10001);
-		
-		addCourseToStudent(students, "Jamon", "Intro to Comp Sci", 100.0);
-		addCourseToStudent(students, "Jamon", "Data Structures", 89.0);
-		addCourseToStudent(students, "Jamon", "Computer Graphics", 92.0);
-		addCourseToStudent(students, "Jamon", "Object Oriented Programming", 98.0);
-		addCourseToStudent(students, "Jamon", "Artifical Intelligence I", 89.0);
-		addCourseToStudent(students, "Jamon", "Data Mining", 95.0);
-		
-		addStudent(students, "Anthony", 10002);
-		
-		addCourseToStudent(students, "Anthony", "Intro to Comp Sci", 100.0);
-		addCourseToStudent(students, "Anthony", "Data Structures", 92.0);
-		addCourseToStudent(students, "Anthony", "Computer Graphics", 91.0);
-		addCourseToStudent(students, "Anthony", "Object Oriented Programming", 95.0);
-		addCourseToStudent(students, "Anthony", "Artifical Intelligence I", 85.0);
-		addCourseToStudent(students, "Anthony", "Data Mining", 90.0);
-		
-		addStudent(students, "Alister", 10003);
-		
-		addCourseToStudent(students, "Alister", "Intro to Comp Sci", 95.0);
-		addCourseToStudent(students, "Alister", "Data Structures", 86.0);
-		addCourseToStudent(students, "Alister", "Computer Graphics", 94.0);
-		addCourseToStudent(students, "Alister", "Object Oriented Programming", 90.0);
-		addCourseToStudent(students, "Alister", "Artifical Intelligence I", 82.0);
-		addCourseToStudent(students, "Alister", "Data Mining", 86.0);
-		
-		updateFile(students, "students.txt");
-		*/
-		
-		/*
-		*/
 		System.out.println("1.) Display All Students");
-		System.out.println("2.) Add Student");
-		System.out.println("3.) Rename Student");
-		System.out.println("4.) Remove Student");
-		System.out.println("5.) Add Course to Student");
-		System.out.println("6.) Update Student Course Grade");
-		System.out.println("7.) Remove Student Course Grade");
-		System.out.println("8.) Show Student Course Grade");
+		System.out.println("2.) Display One Student");
+		System.out.println("3.) Add Student");
+		System.out.println("4.) Rename Student");
+		System.out.println("5.) Remove Student");
+		System.out.println("6.) Add Course to Student");
+		System.out.println("7.) Update Student Course Grade");
+		System.out.println("8.) Remove Student Course Grade");
 		System.out.println("9.) Sort Students");
 		System.out.println("0.) Save Student Data");
 		System.out.println("-1.) Exit");
@@ -690,6 +656,192 @@ public class StudentDatabase
 						System.out.println();
 					}
 				}
+				else if (x == 4)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					if (studentExists(students, stuName))
+					{
+						System.out.println("\tEnter new student name:");
+						System.out.print("\t  ");
+						
+						String newStuName = sc.nextLine();
+						
+						if (!studentExists(students, newStuName))
+						{
+							renameStudent(students, stuName, newStuName);
+							System.out.println();
+						}
+						else
+						{
+							System.out.println("\t" + newStuName + " is already in the system");
+							System.out.println();
+						}
+					}
+					else
+					{
+						System.out.println("\t" + stuName + " not in dataset");
+						System.out.println();
+					}
+				}
+				else if (x == 5)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					removeStudent(students, stuName);
+				}
+				else if (x == 6)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+						
+					String stuName = sc.nextLine();
+					
+					if (studentExists(students, stuName))
+					{
+						System.out.println("\tEnter course:");
+						System.out.print("\t  ");
+						
+						String stuCourse = sc.nextLine();
+						
+						System.out.println("\tEnter student grade:");
+						System.out.print("\t  ");
+							
+						double stuGrade = sc.nextDouble();
+						sc.nextLine();
+							
+						addCourseToStudent(students, stuName, stuCourse, stuGrade);
+						System.out.println();																															
+					}
+					else
+					{
+						System.out.println("\t" + stuName + " not in dataset");
+						System.out.println();
+					}
+				}
+				else if (x == 7)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					if (studentExists(students, stuName))
+					{
+						System.out.println("\tEnter student course:");
+						System.out.print("\t  ");
+						
+						String stuCourse = sc.nextLine();
+						
+						if (courseExistsForStudent(students, stuName, stuCourse))
+						{
+							System.out.println("\tEnter new student grade:");
+							System.out.print("\t  ");
+							
+							double stuGrade = sc.nextDouble();
+							sc.nextLine();
+							
+							updateCourseGradeForStudent(students, stuName, stuCourse, stuGrade);
+							System.out.println();
+						}
+						else
+						{
+							System.out.println("\t" + stuName + " has not taken " + stuCourse);
+							System.out.println();
+						}
+					}
+					else
+					{
+						System.out.println("\t" + stuName + " not in dataset");
+						System.out.println();
+					}
+				}
+				else if (x == 8)
+				{
+					System.out.println("\tEnter student name:");
+					System.out.print("\t  ");
+					
+					String stuName = sc.nextLine();
+					
+					if (studentExists(students, stuName))
+					{
+						System.out.println("\tEnter student course:");
+						System.out.print("\t  ");
+						
+						String stuCourse = sc.nextLine();
+						
+						if (courseExistsForStudent(students, stuName, stuCourse))
+						{
+							removeCourseFromStudent(students, stuName, stuCourse);
+							System.out.println();
+						}
+						else
+						{
+							System.out.println("\t" + stuName + " has not taken " + stuCourse);
+							System.out.println();
+						}
+					}
+					else
+					{
+					System.out.println("\t" + stuName + " not in dataset");
+					System.out.println();
+					}
+				}
+				else if (x == 9)
+				{
+					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
+					System.out.print("\t  ");
+					
+					String sorting = sc.nextLine().toLowerCase();
+					System.out.println();
+					
+					ArrayList<Student> studentsCopy = new ArrayList<Student>(students.values());
+					
+					if (sorting.equals("asc"))
+					{
+						Collections.sort(studentsCopy, aac);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
+					}
+					else if (sorting.equals("desc"))
+					{
+						Collections.sort(studentsCopy, adc);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
+					}
+					else if (sorting.equals("name"))
+					{
+						Collections.sort(studentsCopy, nac);
+						
+						for (Student s : studentsCopy)
+						{
+							System.out.print("\t");
+							s.printInfo();
+						}
+						System.out.println();
+					}
+					else
+					{
+						System.out.println("\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter");
+						System.out.println();
+					}
+				}
 				else if (x == 0)
 				{
 					System.out.println("\tStudent Data Updated");
@@ -738,226 +890,5 @@ public class StudentDatabase
 				System.out.println();
 			}
 		}
-			
-		/*
-		while (true)
-		{
-			try
-			{
-				System.out.println("Please select one of the numbers above then press enter:");
-				
-				int x = Integer.parseInt(sc.nextLine());
-				System.out.println();
-				
-				if (x == 1)
-				{
-					System.out.println("Showing Student Data:");
-					System.out.println();
-					
-					if (students.size() != 0)
-					{
-						displayStudents(students);
-					}
-					else
-					{
-						System.out.println("No entries exist for this file");
-					}
-				}
-				else if (x == 2)
-				{
-					System.out.println("\tEnter student name:");
-					System.out.print("\t  ");
-					
-					String stuName = sc.nextLine();
-					
-					Student curr = students.get(stuName);
-					
-					if (curr == null)
-					{
-						System.out.println("\tEnter student grade:");
-						System.out.print("\t  ");
-						
-						int stuGrade = sc.nextInt();
-						sc.nextLine();
-						
-						addStudent(students, stuName, stuGrade);
-						System.out.println();
-					}
-					else 
-					{
-						System.out.println("\t" + stuName + " is already in the system");
-						System.out.println();
-					}
-				}	
-				else if (x == 3)
-				{
-					System.out.println("\tEnter student name:");
-					System.out.print("\t  ");
-					
-					String stuName = sc.nextLine();
-					
-					Student curr = students.get(stuName);
-					
-					if (curr != null)
-					{
-						System.out.println("\tEnter new student name:");
-						System.out.print("\t  ");
-						
-						String newStuName = sc.nextLine();
-						
-						Student curr2 = students.get(newStuName);
-						
-						if (curr2 == null)
-						{
-							renameStudent(students, stuName, newStuName);
-							System.out.println();
-						}
-						else
-						{
-							System.out.println("\t" + newStuName + " is already in the system");
-							System.out.println();
-						}
-					}
-					else
-					{
-						System.out.println("\t" + stuName + " not in dataset");
-						System.out.println();
-					}
-				}
-				else if (x == 4)
-				{
-					System.out.println("\tEnter student name:");
-					System.out.print("\t  ");
-					
-					String stuName = sc.nextLine();
-					
-					removeStudent(students, stuName);
-				}
-				else if (x == 5)
-				{
-					System.out.println("\tEnter student name:");
-					System.out.print("\t  ");
-					
-					String stuName = sc.nextLine();
-					
-					Student curr = students.get(stuName);
-					
-					if (curr != null)
-					{
-						System.out.println("\tEnter student grade:");
-						System.out.print("\t  ");
-						
-						int stuGrade = sc.nextInt();
-						sc.nextLine();
-						
-						updateGrade(students, stuName, stuGrade);
-						System.out.println();
-					}
-					else
-					{
-						System.out.println("\t" + stuName + " not in dataset");
-						System.out.println();
-					}
-				}
-				//
-				else if (x == 7)
-				{
-					System.out.println("\tSort by grades ('asc' or 'desc') or by name ('name')?");
-					System.out.print("\t  ");
-					
-					String sorting = sc.nextLine().toLowerCase();
-					System.out.println();
-					
-					ArrayList<Student> studentsCopy = new ArrayList<Student>(students.values());
-					
-					if (sorting.equals("asc"))
-					{
-						Collections.sort(studentsCopy, gac);
-						
-						for (Student s : studentsCopy)
-						{
-							System.out.print("\t");
-							s.printInfo();
-						}
-						System.out.println();
-					}
-					else if (sorting.equals("desc"))
-					{
-						Collections.sort(studentsCopy, gdc);
-						
-						for (Student s : studentsCopy)
-						{
-							System.out.print("\t");
-							s.printInfo();
-						}
-						System.out.println();
-					}
-					else if (sorting.equals("name"))
-					{
-						Collections.sort(studentsCopy, nac);
-						
-						for (Student s : studentsCopy)
-						{
-							System.out.print("\t");
-							s.printInfo();
-						}
-						System.out.println();
-					}
-					else
-					{
-						System.out.println("\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter");
-						System.out.println();
-					}
-				}
-				//
-				else if (x == 0)
-				{
-					System.out.println("\tStudent Data Updated");
-					
-					updateFile(students, "students.txt");
-					System.out.println();
-				}
-				else if (x == -1)
-				{
-					if (modified == true)
-					{
-						System.out.println("\tDatabase changes have not been saved");
-						System.out.println("\tAre you sure you want to exit?");
-						System.out.print("\t  ");
-						
-						String quit = sc.nextLine().toLowerCase();
-						System.out.println();
-						
-						if (quit.equals("yes"))
-						{
-							System.out.println("\tThank you, good bye");
-							break;
-						}
-						else
-						{
-							System.out.println("\tBack to Main Menu");
-							System.out.println();
-						}
-					}
-					else
-					{
-						System.out.println("\tThank you, good bye");
-						break;
-					}
-				}
-				else
-				{
-					System.out.println("\tInvalid command, please select one of the numbers above");
-					System.out.println();
-				}
-			}
-			catch (NumberFormatException e)
-			{
-				System.out.println();
-				System.out.println("\tCannot convert that input to a numeric value");
-				System.out.println();
-			}
-		}
-		*/
 	}
 }

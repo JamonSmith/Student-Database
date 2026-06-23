@@ -16,4 +16,6 @@ Jamon,10001,Intro to Comp Sci,100.0
 Jamon,10001,Object Oriented Programming,98.0
 Jamon,10001,Artifical Intelligence I,89.0
 Jamon,10001,Data Structures,89.0
-Devyn,10004
+Devyn,10004,Intro to Criminal Justice,95.0
+Devyn,10004,Juvenile Delinquency,92.0
+Devyn,10004,Criminology,90.0
