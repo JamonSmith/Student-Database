@@ -60,7 +60,8 @@ class Student implements Comparable<Student>
 		
 		if (rm != null)
 		{
-			System.out.print("Course: " + course + " removed");
+			System.out.println("\tRemoved:");
+			System.out.println("\t\t" + rm + CYAN + "\t" + course + RESET);
 			System.out.println();
 		}
 		else
@@ -155,8 +156,8 @@ class Student implements Comparable<Student>
 	
 	public void printInfo()
 	{
-		System.out.print("\t\t" + GREEN + id + "\t" + RESET);
-		System.out.print(CYAN + name + "\t\t" + RESET);
+		System.out.print("\t" + GREEN + id + "\t" + RESET);
+		System.out.print(CYAN + name.substring(0, Math.min(7, name.length())) + "\t\t" + RESET);
 		System.out.println(getAverage() + "\n");
 	}
 }
@@ -207,11 +208,11 @@ public class StudentDatabase
 	
 	public static void displayStudents(HashMap<String, Student> student)
 	{
-		System.out.println("\tAll Students\n");
+		System.out.println("==== All Students ====\n");
 		
 		if (student.size() == 0)
 		{
-			System.out.println(RED + "\t\tNo students found" + RESET);
+			System.out.println(RED + "\tNo students found" + RESET);
 		}
 		else
 		{
@@ -241,7 +242,7 @@ public class StudentDatabase
 		{
 			System.out.println("ID\t: " + GREEN + student.get(name).getID() + RESET);
 			System.out.println("Name\t: " + CYAN + student.get(name).getName() + RESET + "\n\n");
-			System.out.println("==== Courses ====\n");
+			System.out.println("==== " + name + "\'s Courses ====\n");
 			
 			HashMap<String, Double> transcript = student.get(name).getTranscript();
 			
@@ -254,11 +255,11 @@ public class StudentDatabase
 			}
 			else
 			{
-				System.out.println("Student has not taken any courses yet\n");
+				System.out.println("No courses taken yet\n");
 			}
 			
 			System.out.println();
-			System.out.println(student.get(name).getAverage() + "\t: " + PURPLE + "Average Grade\n" + RESET);
+			System.out.println(student.get(name).getAverage() + "\t: " + PURPLE + "Average Grade" + RESET);
 		}
 	}
 	
@@ -284,8 +285,8 @@ public class StudentDatabase
 		modified = true;
 		
 		System.out.println("\tAdded:");
-		System.out.print("\t\t" + student.get(name).getID());
-		System.out.print("\t" + student.get(name).getName());
+		System.out.print(GREEN + "\t\t" + student.get(name).getID());
+		System.out.print(CYAN + "\t" + student.get(name).getName() + RESET);
 		System.out.println("\n");
 	}
 	
@@ -299,12 +300,13 @@ public class StudentDatabase
 			student.put(newName, curr);
 			modified = true;
 			System.out.println("\tStudent Name Updated:");
-			System.out.print("\t  ");
-			curr.printInfo();
+			System.out.print(GREEN + "\t\t" + curr.getID() + "\t");
+			System.out.print(CYAN + curr.getName() + "\t" + RESET);
+			System.out.println("\n");
 		}
 		else
 		{
-			System.out.println("\t" + name + " not in dataset");
+			System.out.println(RED + "\t" + name + " not in dataset" + RESET);
 		}
 	}
 	
@@ -314,17 +316,16 @@ public class StudentDatabase
 		
 		if (rm != null)
 		{
-			modified = true;
 			System.out.println("\tRemoved: ");
-			System.out.print("\t  ");
-			System.out.print("\t\t" + GREEN + rm.getID() + "\t" + RESET);
+			System.out.print(GREEN + "\t\t" + rm.getID() + "\t");
 			System.out.print(CYAN + rm.getName() + "\n" + RESET);
-			System.out.println();
+			modified = true;
+			System.out.println("\n");
 		}
 		else
 		{
-			System.out.println("\t" + removeName + " not in dataset");
-			System.out.println();
+			System.out.println(RED + "\t" + removeName + " not in dataset" + RESET);
+			System.out.println("\n");
 		}
 	}
 	
@@ -338,6 +339,9 @@ public class StudentDatabase
 		{
 			student.get(name).addCourse(course, grade);
 			modified = true;
+			System.out.println("\tAdded:");
+			System.out.print(CYAN + "\t\t" + course + RESET + " : " + student.get(name).clampGrade(grade));
+			System.out.println("\n");
 		}
 	}
 	
@@ -377,7 +381,7 @@ public class StudentDatabase
 			double currGrade = student.get(name).getCourseGrade(course);
 			double ng = student.get(name).clampGrade(newGrade);
 			
-			System.out.println(PURPLE + course + RESET + " grade changed from " + GREEN + currGrade + RESET + " to " + GREEN + ng + RESET);
+			System.out.println(CYAN + "\t" + course + RESET + " grade changed from " + GREEN + currGrade + RESET + " to " + GREEN + ng + RESET);
 			student.get(name).setCourseGrade(course, newGrade);
 			modified = true;
 		}
@@ -391,7 +395,7 @@ public class StudentDatabase
 	{
 		if (!studentExists(student, name))
 		{
-			System.out.println(CYAN + name + RESET + " does not exist in our records.");
+			System.out.println(RED +"\t" + name + RESET + " does not exist in our records.");
 		}
 		else 
 		{
@@ -437,7 +441,8 @@ public class StudentDatabase
 		}
 		catch (IOException e)
 		{
-			System.out.println("Could not write to file " + str);
+			System.out.println();
+			System.out.println(RED + "\tCould not write to file " + RESET + str);
 			return;
 		}
 	}
@@ -541,14 +546,18 @@ public class StudentDatabase
 				System.out.println("Please select one of the numbers above then press enter:");
 				
 				int x = Integer.parseInt(sc.nextLine());
-				System.out.println();
+				System.out.println("\n");
 				
 				if (x == 1)
 				{
-					System.out.println("Showing Students:");
+					System.out.println("==========================================================");
 					System.out.println();
 					
 					displayStudents(students);
+					
+					System.out.println();
+					System.out.println("==========================================================");
+					System.out.println("\n");
 				}
 				else if (x == 2)
 				{
@@ -556,9 +565,16 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println("\n");
+					
+					System.out.println("==========================================================");
 					System.out.println();
 					
 					showOneStudent(students, stuName);
+					
+					System.out.println();
+					System.out.println("==========================================================");
+					System.out.println("\n");
 				}
 				else if (x == 3)
 				{
@@ -566,10 +582,11 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					if (studentExists(students, stuName))
 					{
-						System.out.println("\t" + stuName + " is already in the system");
+						System.out.println(RED + "\t" + stuName + " is already in the system" + RESET);
 						System.out.println();
 					}
 					else if (stuName.isEmpty())
@@ -585,10 +602,12 @@ public class StudentDatabase
 						{		
 							int stuID = sc.nextInt();
 							sc.nextLine();
+							System.out.println();
 							
 							if (stuID < 10001 || stuID > 99999)
 							{
-								System.out.println(RED + "Student ID number must be within range [10001, 99999]\n" + RESET);
+								System.out.println(RED + "\tStudent ID number must be within range [10001, 99999]" + RESET);
+								System.out.println("\n");
 							}
 							else
 							{
@@ -598,7 +617,8 @@ public class StudentDatabase
 						}
 						catch (InputMismatchException e)
 						{
-							System.out.println(RED + "Student ID number must be a positive integer within range [10001, 99999]\n" + RESET);
+							System.out.println();
+							System.out.println(RED + "\tStudent ID number must be an integer within range [10001, 99999]\n" + RESET);
 							sc.nextLine();
 						}
 					}
@@ -609,6 +629,7 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					if (studentExists(students, stuName))
 					{
@@ -616,6 +637,7 @@ public class StudentDatabase
 						System.out.print("\t  ");
 						
 						String newStuName = sc.nextLine();
+						System.out.println();
 						
 						if (!studentExists(students, newStuName))
 						{
@@ -624,14 +646,14 @@ public class StudentDatabase
 						}
 						else
 						{
-							System.out.println("\t" + newStuName + " is already in the system");
+							System.out.println(RED + "\t" + newStuName + " is already in the system" + RESET);
 							System.out.println();
 						}
 					}
 					else
 					{
-						System.out.println("\t" + stuName + " not in dataset");
-						System.out.println();
+						System.out.println(RED + "\t" + stuName + " not in dataset" + RESET);
+						System.out.println("\n");
 					}
 				}
 				else if (x == 5)
@@ -640,6 +662,7 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					removeStudent(students, stuName);
 				}
@@ -649,6 +672,7 @@ public class StudentDatabase
 					System.out.print("\t  ");
 						
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					if (studentExists(students, stuName))
 					{
@@ -656,28 +680,40 @@ public class StudentDatabase
 						System.out.print("\t  ");
 						
 						String stuCourse = sc.nextLine();
+						System.out.println();
 						
-						System.out.println("\tEnter student grade:");
-						System.out.print("\t  ");
-						
-						try 
+						if (courseExistsForStudent(students, stuName, stuCourse))
 						{
-							double stuGrade = sc.nextDouble();
-							sc.nextLine();
-								
-							addCourseToStudent(students, stuName, stuCourse, stuGrade);
-							System.out.println();
+							System.out.println(RED + "\t" + stuName + " already has this course" + RESET);
+							System.out.println("\n");
 						}
-						catch (InputMismatchException e)
+						else
 						{
-							System.out.println(RED + "Student grade must be a number\n" + RESET);
-							sc.nextLine();
+							System.out.println("\tEnter student grade:");
+							System.out.print("\t  ");
+						
+							try 
+							{
+								double stuGrade = sc.nextDouble();
+								sc.nextLine();
+								System.out.println();
+									
+								addCourseToStudent(students, stuName, stuCourse, stuGrade);
+								System.out.println();
+							}
+							catch (InputMismatchException e)
+							{
+								System.out.println();
+								System.out.println(RED + "\tStudent grade must be a number\n" + RESET);
+								sc.nextLine();
+								System.out.println();
+							}
 						}
 					}
 					else
 					{
-						System.out.println("\t" + stuName + " not in dataset");
-						System.out.println();
+						System.out.println(RED + "\t" + stuName + " not in dataset" + RESET);
+						System.out.println("\n");
 					}
 				}
 				else if (x == 7)
@@ -686,6 +722,7 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					if (studentExists(students, stuName))
 					{
@@ -693,6 +730,7 @@ public class StudentDatabase
 						System.out.print("\t  ");
 						
 						String stuCourse = sc.nextLine();
+						System.out.println();
 						
 						if (courseExistsForStudent(students, stuName, stuCourse))
 						{
@@ -703,26 +741,29 @@ public class StudentDatabase
 							{
 								double stuGrade = sc.nextDouble();
 								sc.nextLine();
+								System.out.println();
 								
 								updateCourseGradeForStudent(students, stuName, stuCourse, stuGrade);
-								System.out.println();
+								System.out.println("\n");
 							}
 							catch (InputMismatchException e)
 							{
-								System.out.println(RED + "Student grade must be a number\n" + RESET);
+								System.out.println();
+								System.out.println(RED + "\tStudent grade must be a number\n" + RESET);
 								sc.nextLine();
+								System.out.println();
 							}
 						}
 						else
 						{
-							System.out.println("\t" + stuName + " has not taken " + stuCourse);
-							System.out.println();
+							System.out.println(RED + "\t" + stuName + " has not taken " + stuCourse + RESET);
+							System.out.println("\n");
 						}
 					}
 					else
 					{
-						System.out.println("\t" + stuName + " not in dataset");
-						System.out.println();
+						System.out.println(RED + "\t" + stuName + " not in dataset" + RESET);
+						System.out.println("\n");
 					}
 				}
 				else if (x == 8)
@@ -731,6 +772,7 @@ public class StudentDatabase
 					System.out.print("\t  ");
 					
 					String stuName = sc.nextLine();
+					System.out.println();
 					
 					if (studentExists(students, stuName))
 					{
@@ -738,6 +780,7 @@ public class StudentDatabase
 						System.out.print("\t  ");
 						
 						String stuCourse = sc.nextLine();
+						System.out.println();
 						
 						if (courseExistsForStudent(students, stuName, stuCourse))
 						{
@@ -746,14 +789,14 @@ public class StudentDatabase
 						}
 						else
 						{
-							System.out.println("\t" + stuName + " has not taken " + stuCourse);
-							System.out.println();
+							System.out.println(RED + "\t" + stuName + " has not taken " + stuCourse + RESET);
+							System.out.println("\n");
 						}
 					}
 					else
 					{
-					System.out.println("\t" + stuName + " not in dataset");
-					System.out.println();
+					System.out.println(RED + "\t" + stuName + " not in dataset" + RESET);
+					System.out.println("\n");
 					}
 				}
 				else if (x == 9)
@@ -801,22 +844,22 @@ public class StudentDatabase
 					}
 					else
 					{
-						System.out.println("\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter");
+						System.out.println(RED + "\tInvalid sorting order, please choose 'asc', 'desc', or 'name' then press enter" + RESET);
 						System.out.println();
 					}
 				}
 				else if (x == 0)
 				{
-					System.out.println("\tStudent Data Updated");
+					System.out.println(GREEN + "\tStudent Data Updated" + RESET);
 					
 					updateFile(students, "students.txt");
-					System.out.println();
+					System.out.println("\n");
 				}
 				else if (x == -1)
 				{
 					if (modified == true)
 					{
-						System.out.println("\tDatabase changes have not been saved");
+						System.out.println(RED + "\tDatabase changes have not been saved" + RESET);
 						System.out.println("\tAre you sure you want to exit?");
 						System.out.print("\t  ");
 						
@@ -825,7 +868,7 @@ public class StudentDatabase
 						
 						if (quit.equals("yes"))
 						{
-							System.out.println("\tThank you, good bye");
+							System.out.println(GREEN + "\tThank you, good bye\n" + RESET);
 							break;
 						}
 						else
@@ -836,7 +879,7 @@ public class StudentDatabase
 					}
 					else
 					{
-						System.out.println("\tThank you, good bye");
+						System.out.println(GREEN + "\tThank you, good bye\n" + RESET);
 						break;
 					}
 				}
