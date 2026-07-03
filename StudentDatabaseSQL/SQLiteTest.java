@@ -157,6 +157,23 @@ public class SQLiteTest
 		System.out.println("====================================================\n");
 	}		
 		
+	public static boolean studentExists(Connection conn, int id) throws SQLException
+	{
+		String query = """
+						SELECT * 
+						FROM students
+						WHERE student_id = ?;
+						""";
+						
+		PreparedStatement ps = conn.prepareStatement(query);
+						
+		ps.setInt(1, id);
+		
+		ResultSet rs = ps.executeQuery();
+		
+		return rs.next();
+	}
+		
 	public static void showOneStudent(Connection conn, int stuID) throws SQLException
 	{
 		String query = """
@@ -166,66 +183,66 @@ public class SQLiteTest
 						ON students.student_id = grades.student_id
 						WHERE students.student_id = ?;
 						""";
-			
+						
 		PreparedStatement ps = conn.prepareStatement(query);
-		
+						
 		ps.setInt(1, stuID);
-				
+		
 		ResultSet rs = ps.executeQuery();
 		
 		System.out.println("====================================================\n");
 		
-		if (rs.next())
-		{
-			int id = rs.getInt("student_id");
-			String first = rs.getString("first_name");
-			String last = rs.getString("last_name");
-			
-			System.out.println(GREEN + id + "\n");
-			System.out.println(CYAN + last + ", " + first + "\n" + RESET);
-			System.out.println();
-			
-			do
-			{
-				String course = rs.getString("course_name");
-				
-				if (course != null)
-				{
-					double grade = rs.getDouble("grade");
-					
-					System.out.println(course.substring(0, Math.min(7, course.length())) + "\t\t" + grade);
-					System.out.println();
-				}
-				else
-				{
-					System.out.println("No classes taken yet\n");
-				}
-			}
-			while(rs.next());
-			
-			String query2 = """
-							SELECT ROUND(AVG(grade), 2) AS \"average\"
-							FROM grades
-							WHERE student_id = ?;
-							""";
-							
-			PreparedStatement ps2 = conn.prepareStatement(query2);
-			
-			ps2.setInt(1, stuID);
-
-			ResultSet rs2 = ps2.executeQuery();
-			
-			if (rs2.next())
-			{
-				double avg = rs2.getDouble("average");
-			
-				System.out.println(PURPLE + "Average\t\t" + RESET + avg + "\n" + RESET);
-			}
-		}
-		else
+		if (!rs.next())
 		{
 			System.out.println("\t" + stuID + RED + " not found\n" + RESET);
+			System.out.println("\n====================================================\n");
+			return;
 		}	
+		
+		int id = rs.getInt("student_id");
+		String first = rs.getString("first_name");
+		String last = rs.getString("last_name");
+		
+		System.out.println(GREEN + id + "\n");
+		System.out.println(CYAN + last + ", " + first + "\n" + RESET);
+		System.out.println();
+		
+		do
+		{
+			String course = rs.getString("course_name");
+			
+			if (course != null)
+			{
+				double grade = rs.getDouble("grade");
+				
+				System.out.println(course.substring(0, Math.min(7, course.length())) + "\t\t" + grade);
+				System.out.println();
+			}
+			else
+			{
+				System.out.println("No classes taken yet\n");
+			}
+		}
+		while(rs.next());
+		
+		String query2 = """
+						SELECT ROUND(AVG(grade), 2) AS \"average\"
+						FROM grades
+						WHERE student_id = ?;
+						""";
+						
+		PreparedStatement ps2 = conn.prepareStatement(query2);
+		
+		ps2.setInt(1, stuID);
+
+		ResultSet rs2 = ps2.executeQuery();
+		
+		if (rs2.next())
+		{
+			double avg = rs2.getDouble("average");
+		
+			System.out.println(PURPLE + "Average\t\t" + RESET + avg + "\n" + RESET);
+		}
 		
 		System.out.println("\n====================================================\n");
 	}
@@ -287,37 +304,142 @@ public class SQLiteTest
 	
 	public static void addCourseToStudent(Connection conn, int id, String course, double grade) throws SQLException
 	{
+		if (!studentExists(conn, id))
+		{
+			System.out.println(RED + "\nStudent not found" + RESET);
+			System.out.println("\n");
+			return;
+		}
+		
 		String query = """
-						SELECT * 
-						FROM students
+						INSERT INTO grades (student_id, course_name, grade)
+						VALUES (?, ?, ?);
+						""";
+						
+		PreparedStatement ps = conn.prepareStatement(query);
+		
+		ps.setInt(1, id);
+		ps.setString(2, course);
+		ps.setDouble(3, grade);
+		
+		int rows = ps.executeUpdate();
+		
+		System.out.println(CYAN + "\nRows affected: " + RESET + rows);
+		System.out.println(CYAN + "Student: " + RESET + id);
+		System.out.println(CYAN + "Course:\t" + RESET + course);
+		System.out.println(CYAN + "Grade:\t" + RESET + grade);
+		System.out.println("\n");
+	}
+	
+	public static void updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade) throws SQLException
+	{
+		if (!studentExists(conn, id))
+		{
+			System.out.println(RED + "\nStudent not found" + RESET);
+			System.out.println("\n");
+			return;
+		}
+		
+		String query = """
+						UPDATE grades
+						SET grade = ? 
+						WHERE student_id = ?
+						AND course_name = ?;
+						""";
+						
+		PreparedStatement ps = conn.prepareStatement(query);
+
+		ps.setDouble(1, newGrade);
+		ps.setInt(2, id);
+		ps.setString(3, course);
+		
+		int rows = ps.executeUpdate();
+		
+		if (rows == 1)
+		{
+			System.out.println(CYAN + "\nRows affected: " + RESET + rows);
+			System.out.println(CYAN + "Student: " + RESET + id);
+			System.out.println(course + CYAN + " grade changed to: " + RESET + newGrade);
+			System.out.println("\n");				
+		}
+		else
+		{
+			System.out.println(RED + "\nStudent has not taken " + RESET + course);
+			System.out.println("\n");
+		}
+	}
+	
+	public static void removeCourseFromStudent(Connection conn, int id, String course) throws SQLException
+	{
+		if (!studentExists(conn, id))
+		{
+			System.out.println(RED + "\nStudent not found" + RESET);
+			System.out.println("\n");
+			return;
+		}
+		
+		String query = """
+						DELETE FROM grades 
+						WHERE student_id = ?
+						AND course_name = ?;
+						""";
+						
+		PreparedStatement ps = conn.prepareStatement(query);
+		
+		ps.setInt(1, id);
+		ps.setString(2, course);
+		
+		int rows = ps.executeUpdate();
+		
+		if (rows == 1)
+		{
+			System.out.println(CYAN + "\nRows affected: " + RESET + rows);
+			System.out.println(CYAN + "Student: " + RESET + id);
+			System.out.println(course + CYAN + " removed" + RESET);
+			System.out.println("\n");				
+		}
+		else
+		{
+			System.out.println(RED + "\nStudent has not taken " + RESET + course);
+			System.out.println("\n");
+		}
+	}
+	
+	public static void removeStudent(Connection conn, int id) throws SQLException
+	{
+		if (!studentExists(conn, id))
+		{
+			System.out.println(RED + "\nStudent not found" + RESET);
+			System.out.println("\n");
+			return;
+		}
+		
+		String query = """
+						DELETE FROM grades
 						WHERE student_id = ?;
 						""";
 						
 		PreparedStatement ps = conn.prepareStatement(query);
-	
+			
 		ps.setInt(1, id);
+
+		ps.executeUpdate();
 		
-		ResultSet rs = ps.executeQuery();
+		String query2 = """
+						DELETE FROM students
+						WHERE student_id = ?;
+						""";
+						
+		PreparedStatement ps2 = conn.prepareStatement(query2);
 		
-		if (rs.next())
+		ps2.setInt(1, id);
+		
+		int rows = ps2.executeUpdate();
+		
+		if (rows == 1)
 		{
-			String query2 = """
-							INSERT INTO grades (student_id, course_name, grade)
-							VALUES (?, ?, ?);
-							""";
-							
-			PreparedStatement ps2 = conn.prepareStatement(query2);
-			
-			ps2.setInt(1, id);
-			ps2.setString(2, course);
-			ps2.setDouble(3, grade);
-			
-			int rows = ps2.executeUpdate();
-			
 			System.out.println(CYAN + "\nRows affected: " + RESET + rows);
-			System.out.println(CYAN + "Student: " + RESET + id);
-			System.out.println(CYAN + "Course:\t" + RESET + course);
-			System.out.println(CYAN + "Grade:\t" + RESET + grade);
+			System.out.println(CYAN + "Student: " + RESET + id + CYAN + " removed" + RESET);
 			System.out.println("\n");
 		}
 		else
@@ -326,6 +448,70 @@ public class SQLiteTest
 			System.out.println("\n");
 		}
 	}
+	
+	public static void sortedStudents(Connection conn, String sorter) throws SQLException
+	{
+		String str = "";
+		
+		if (sorter.equals("average"))
+		{
+			str = "average";
+		}
+		else if (sorter.equals("first_name"))
+		{
+			str = "first_name";
+		}
+		else if (sorter.equals("last_name"))
+		{
+			str = "last_name";
+		}
+		else
+		{
+			System.out.println(RED + "Invalid sorter, try again" + RESET);
+			System.out.println("\n");
+			return;
+		}
+		
+		String query = "SELECT students.student_id, first_name, last_name, ROUND(AVG(grade), 2) AS \"average\" " +
+						"FROM students " +
+						"LEFT JOIN grades " +
+						"ON students.student_id = grades.student_id " +
+						"GROUP BY students.student_id " +
+						"ORDER BY " +
+						str + " ASC;";
+			
+		Statement s = conn.createStatement();
+		
+		ResultSet rs = s.executeQuery(query);
+		
+		System.out.println("====================================================\n");
+		
+		System.out.println("All Students\n");
+		
+		if (rs.next())
+		{
+			do
+			{
+				int id = rs.getInt("student_id");
+				String first = rs.getString("first_name");
+				String last = rs.getString("last_name");
+				double avg = rs.getDouble("average");
+				
+				System.out.print(GREEN + "\t" + id);
+				System.out.print(CYAN + "\t" + last.substring(0, Math.min(7, last.length())));
+				System.out.print("\t" + first.substring(0, Math.min(7, first.length())));
+				System.out.println(RESET + "\t\t" + avg + "\n");
+			}
+			while(rs.next());
+		}
+		else
+		{
+			System.out.println("\t" + RED + "No students found\n" + RESET);
+		}	
+		
+		System.out.println();
+		System.out.println("====================================================\n");
+	}	
 	
 	public static void main(String[] args)
 	{
@@ -340,11 +526,15 @@ public class SQLiteTest
 			while (true)
 			{
 				System.out.println("1.) Show all students");
-				System.out.println("2.) Add a student");
-				System.out.println("3.) Rename a student");
-				System.out.println("4.) Add course to a student");
-				System.out.println("0.) Show a student");
-				System.out.println("-1.)\tPress \'-1\' then \'Enter\' to exit");
+				System.out.println("2.) Show a student");
+				System.out.println("3.) Add a student");
+				System.out.println("4.) Rename a student");
+				System.out.println("5.) Add course to a student");
+				System.out.println("6.) Update a course grade for a student");
+				System.out.println("7.) Remove a course from a student");
+				System.out.println("8.) Remove a student");
+				System.out.println("9.) Sort all students");
+				System.out.println("0.) Exit");
 				
 				int choice = sc.nextInt();
 				sc.nextLine();
@@ -359,32 +549,6 @@ public class SQLiteTest
 				}
 				else if (choice == 2)
 				{
-					String fn = sc.nextLine();
-					String ln = sc.nextLine();
-					
-					addStudent(conn, fn, ln);
-				}
-				else if (choice == 3)
-				{
-					int id = sc.nextInt();
-					sc.nextLine();
-					String fn = sc.nextLine();
-					String ln = sc.nextLine();
-					
-					renameStudent(conn, id, fn, ln);
-				}
-				else if (choice == 4)
-				{
-					int id = sc.nextInt();
-					sc.nextLine();
-					String course = sc.nextLine();
-					double grade = sc.nextDouble();
-					sc.nextLine();
-					
-					addCourseToStudent(conn, id, course, grade);
-				}
-				else if (choice == 0)
-				{
 					System.out.print(CYAN + "ID number to search: " + RESET);
 					
 					int input = sc.nextInt();
@@ -395,7 +559,64 @@ public class SQLiteTest
 					
 					System.out.println();
 				}
-				else if (choice == -1)
+				else if (choice == 3)
+				{
+					String fn = sc.nextLine();
+					String ln = sc.nextLine();
+					
+					addStudent(conn, fn, ln);
+				}
+				else if (choice == 4)
+				{
+					int id = sc.nextInt();
+					sc.nextLine();
+					String fn = sc.nextLine();
+					String ln = sc.nextLine();
+					
+					renameStudent(conn, id, fn, ln);
+				}
+				else if (choice == 5)
+				{
+					int id = sc.nextInt();
+					sc.nextLine();
+					String course = sc.nextLine();
+					double grade = sc.nextDouble();
+					sc.nextLine();
+					
+					addCourseToStudent(conn, id, course, grade);
+				}
+				else if (choice == 6)
+				{
+					int id = sc.nextInt();
+					sc.nextLine();
+					String course = sc.nextLine();
+					double grade = sc.nextDouble();
+					sc.nextLine();
+					
+					updateCourseGradeForStudent(conn, id, course, grade);
+				}
+				else if (choice == 7)
+				{
+					int id = sc.nextInt();
+					sc.nextLine();
+					String course = sc.nextLine();
+					
+					removeCourseFromStudent(conn, id, course);
+				}
+				else if (choice == 8)
+				{
+					int id = sc.nextInt();
+					sc.nextLine();
+					
+					removeStudent(conn, id);
+				}
+				else if (choice == 9)
+				{
+					String sorter = sc.nextLine();
+					
+					sortedStudents(conn, sorter);
+				}
+				else if (choice == 0)
 				{
 					System.out.println(GREEN + "Thank you, goodbye\n" + RESET);
 					break;
