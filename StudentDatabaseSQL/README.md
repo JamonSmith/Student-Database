@@ -42,13 +42,11 @@ maintaining the object-oriented structure of the original project.
 - JDBC Database Connectivity
 - CRUD Operations
 - Exception Handling
+- Input Validation
 - Console-Based Application Development
 
 ## Future Improvements
 
-- Update and removal of individual course grades.
-- Removal of existing students along with associated records.
-- Improve input validation.
 - Refactor into separate database, model, and user interface classes.
 - Build web-based front end using HTML, CSS, and JavaScript while reusing existing
   database logic.
