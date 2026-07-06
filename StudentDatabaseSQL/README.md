@@ -14,7 +14,13 @@ maintaining the object-oriented structure of the original project.
 - Add new students to the database.
 - Rename existing students.
 - Add courses and grades to an existing student.
-- House all data in an SQLite database using JDBC.
+- Update existing course grades in a student's records.
+- Remove courses from a student's records.
+- Remove a student and all their information.
+- Sort students by first name, last name, or average grade.
+- Confirmation prompts for destructive operations.
+- Input validation and SQL exception handling.
+- House all data in an SQLite relational database using JDBC.
 
 ## Technologies
 
@@ -26,6 +32,7 @@ maintaining the object-oriented structure of the original project.
 
 - SELECT
 - INSERT
+- DELETE
 - UPDATE
 - INNER JOIN
 - LEFT JOIN
@@ -44,6 +51,8 @@ maintaining the object-oriented structure of the original project.
 - Exception Handling
 - Input Validation
 - Console-Based Application Development
+- Refactoring and Code Reuse
+- Defensive Programming
 
 ## Future Improvements
 
