@@ -10,6 +10,7 @@ import java.sql.SQLException;
 public class SQLiteTest
 {
 	public static final String RESET = "\u001B[0m";
+	public static final String UNDERLINE = "\u001B[4m";
 	public static final String RED = "\u001B[31m";
 	public static final String GREEN = "\u001B[32m";
 	public static final String YELLOW = "\u001B[33m";
@@ -23,7 +24,7 @@ public class SQLiteTest
 	{
 		while (true)
 		{
-			System.out.println(prompt);
+			System.out.print(prompt);
 			
 			try
 			{
@@ -35,7 +36,7 @@ public class SQLiteTest
 			catch (InputMismatchException e)
 			{
 				sc.nextLine();
-				System.out.println(RED + "Enter a valid integer" + RESET);
+				System.out.println(RED + "\nEnter a valid integer\n" + RESET);
 				System.out.println();
 			}
 		}
@@ -45,13 +46,13 @@ public class SQLiteTest
 	{
 		while (true)
 		{
-			System.out.println(prompt);
+			System.out.print(prompt);
 			
 			String val = sc.nextLine().trim();
 			
 			if (val.isEmpty())
 			{
-				System.out.println(RED + "Please provide an input" + RESET);
+				System.out.println(RED + "\nPlease provide an input\n" + RESET);
 				System.out.println();
 				continue;
 			}
@@ -64,7 +65,7 @@ public class SQLiteTest
 	{
 		while (true)
 		{
-			System.out.println(prompt);
+			System.out.print(prompt);
 			
 			try
 			{
@@ -76,7 +77,7 @@ public class SQLiteTest
 			catch (InputMismatchException e)
 			{
 				sc.nextLine();
-				System.out.println(RED + "Enter a valid input" + RESET);
+				System.out.println(RED + "\nEnter a valid input\n" + RESET);
 				System.out.println();
 			}
 		}
@@ -99,9 +100,7 @@ public class SQLiteTest
 			
 			ResultSet rs = s.executeQuery(query);
 			
-			System.out.println("====================================================\n");
-			
-			System.out.println("All Students\n");
+			int sum = 0;
 			
 			if (rs.next())
 			{
@@ -111,26 +110,28 @@ public class SQLiteTest
 					String first = rs.getString("first_name");
 					String last = rs.getString("last_name");
 					double avg = rs.getDouble("average");
+					sum++;
 					
-					System.out.print(GREEN + "\t" + id);
+					System.out.print(GREEN + id);
 					System.out.print(CYAN + "\t" + last.substring(0, Math.min(7, last.length())));
 					System.out.print("\t" + first.substring(0, Math.min(7, first.length())));
 					System.out.println(RESET + "\t\t" + avg + "\n");
 				}
 				while(rs.next());
+				
+				System.out.println(PURPLE + "Total Students:\t\t\t" + RESET + sum + "\n");
 			}
 			else
 			{
-				System.out.println("\t" + RED + "No students found\n" + RESET);
+				System.out.println(RED + "No students found\n" + RESET);
 			}	
 			
-			System.out.println();
 			System.out.println("====================================================\n");
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}	
 	}		
@@ -155,8 +156,8 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 			return false;
 		}	
@@ -188,7 +189,7 @@ public class SQLiteTest
 			String last = rs.getString("last_name");
 			
 			System.out.println("====================================================\n");
-			System.out.println("Selected Student\n");
+			System.out.println("Selected Student:\n");
 			System.out.println(CYAN + "Student: " + RESET + last + ", " + first + "\n");
 			System.out.println(RED + "Continue? (y/n):" + RESET);
 			
@@ -198,8 +199,8 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 			return false;
 		}	
@@ -228,7 +229,7 @@ public class SQLiteTest
 			if (!rs.next())
 			{
 				System.out.println("\t" + stuID + RED + " not found\n" + RESET);
-				System.out.println("\n====================================================\n");
+				System.out.println("====================================================\n");
 				return;
 			}	
 			
@@ -277,12 +278,12 @@ public class SQLiteTest
 				System.out.println(PURPLE + "Average\t\t" + RESET + avg + "\n" + RESET);
 			}
 			
-			System.out.println("\n====================================================\n");
+			System.out.println("====================================================\n");
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}	
 	}
@@ -298,20 +299,20 @@ public class SQLiteTest
 							
 			PreparedStatement ps = conn.prepareStatement(query);
 			
-			ps.setString(1, first);
-			ps.setString(2, last);
+			ps.setString(1, first.trim());
+			ps.setString(2, last.trim());
 			
 			int rows = ps.executeUpdate();
 			
 			if (rows == 1)
 			{
-				System.out.println(CYAN + "\nRows affected: " + RESET + rows);
 				System.out.println(CYAN + "Added:\t\t" + RESET + last + ", " + first + "\n");
+				System.out.println("====================================================\n\n");
 			}
 			else
 			{
-				System.out.println(RED + "\nStudent could not be added" + RESET);
-				System.out.println("\n");
+				System.out.println(RED + "\nStudent could not be added\n" + RESET);
+				System.out.println("====================================================\n\n");
 			}
 		}
 		catch (SQLException e)
@@ -347,13 +348,13 @@ public class SQLiteTest
 				
 			ps.executeUpdate();
 			
-			System.out.println(id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
-			System.out.println("\n");
+			System.out.println("\n" + id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
+			System.out.println("\n====================================================\n\n");
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}
 	}
@@ -380,8 +381,8 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 			return false;
 		}
@@ -400,8 +401,8 @@ public class SQLiteTest
 			
 			if (courseExistsForStudent(conn, id, course))
 			{
-				System.out.println(RED + "\nStudent has already taken " + RESET + course);
-				System.out.println("\n");
+				System.out.println(RED + "Student has already taken " + RESET + course);
+				System.out.println("\n====================================================\n");
 				return;
 			}
 			
@@ -418,15 +419,15 @@ public class SQLiteTest
 			
 			ps.executeUpdate();
 			
-			System.out.println(CYAN + "Student: " + RESET + id);
+			System.out.println(GREEN + "Added:");
 			System.out.println(CYAN + "Course:\t" + RESET + course);
 			System.out.println(CYAN + "Grade:\t" + RESET + grade);
-			System.out.println("\n");
+			System.out.println("\n====================================================\n\n");
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}
 	}
@@ -470,8 +471,8 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}
 	}
@@ -483,14 +484,14 @@ public class SQLiteTest
 			if (!studentExists(conn, id))
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
+				System.out.println(UNDERLINE + "Add a Course to a Student\n" + RESET);
 				return;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
 				System.out.println(RED + "\nStudent has not taken " + RESET + course);
-				System.out.println("\n");
+				System.out.println("\n====================================================\n\n");
 				return;
 			}
 			
@@ -507,15 +508,15 @@ public class SQLiteTest
 			
 			ps.executeUpdate();
 			
-			System.out.println(CYAN + "Student: " + RESET + id);
-			System.out.println(course + CYAN + " removed" + RESET);
-			System.out.println("\n");				
+			System.out.println(GREEN + "\nRemoved:");
+			System.out.println(CYAN + "Course:\t" + RESET + course);
+			System.out.println("\n====================================================\n\n");				
 			
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}
 	}
@@ -556,19 +557,19 @@ public class SQLiteTest
 			if (rows == 1)
 			{
 				System.out.println(CYAN + "\nRows affected: " + RESET + rows);
-				System.out.println(CYAN + "Student: " + RESET + id + CYAN + " removed" + RESET);
-				System.out.println("\n");
+				System.out.println(CYAN + "Student: " + RESET + id + CYAN + " removed\n" + RESET);
+				System.out.println("====================================================\n");
 			}
 			else
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
+				System.out.println(RED + "\nStudent not found\n" + RESET);
+				System.out.println("====================================================\n");
 			}
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
+			System.out.println(RED + "Something went wrong");
+			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
 		}	
 	}
@@ -671,21 +672,24 @@ public class SQLiteTest
 					System.out.println("9.) Sort all students");
 					System.out.println("0.) Exit");
 					
-					System.out.print(CYAN);
+					System.out.print(CYAN + "\nOption: " + RESET);
 					int choice = sc.nextInt();
 					sc.nextLine();
-					System.out.println(RESET);
-					
+					System.out.println("\n\n====================================================\n");
 					
 					if (choice == 1)
 					{
+						System.out.println(UNDERLINE + "All Students\n" + RESET);
+						
 						displayStudents(conn);
 						
 						System.out.println();
 					}
 					else if (choice == 2)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Display Individual Student\n" + RESET);
+						
+						int id = getIntInput(sc, (CYAN + "Student ID number: " + RESET));
 						
 						showOneStudent(conn, id);
 						
@@ -693,116 +697,136 @@ public class SQLiteTest
 					}
 					else if (choice == 3)
 					{
-						String fn = getStringInput(sc, "Enter student first name: ");
-						String ln = getStringInput(sc, "Enter student last name: ");
+						System.out.println(UNDERLINE + "Add a Student\n" + RESET);
+						
+						String fn = getStringInput(sc, (CYAN + "First name:\t" + RESET));
+						String ln = getStringInput(sc, (CYAN + "Last name:\t" + RESET));
 						
 						addStudent(conn, fn, ln);
 					}
 					else if (choice == 4)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Rename a Student\n" + RESET);
+						
+						int id = getIntInput(sc, (CYAN + "Student ID number:\t" + RESET));
 						
 						boolean confirm = confirmStudent(conn, sc, id);
 						
 						if (!confirm)
 						{
-							System.out.println();
+							System.out.println("\n====================================================\n\n");
 							continue;
 						}
 						
-						String fn = getStringInput(sc, "Enter student first name: ");
-						String ln = getStringInput(sc, "Enter student last name: ");
-						
+						System.out.println("\n====================================================\n");
+						String fn = getStringInput(sc, (CYAN + "New first name:\t" + RESET));
+						String ln = getStringInput(sc, (CYAN + "New last name:\t" + RESET));						
 						renameStudent(conn, id, fn, ln);
 					}
 					else if (choice == 5)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Add a Course to a Student\n" + RESET);
+						
+						int id = getIntInput(sc, (CYAN + "Student ID number:\t" + RESET));
 						
 						boolean confirm = confirmStudent(conn, sc, id);
 						
 						if (!confirm)
 						{
-							System.out.println();
+							System.out.println("\n====================================================\n\n");
 							continue;
 						}
 						
-						String course = getStringInput(sc, "Enter course name: ");
-						double grade = getDoubleInput(sc, "Enter course grade: ");
+						System.out.println("\n====================================================\n");
+						String course = getStringInput(sc, (CYAN + "Course:\t" + RESET));
+						double grade = getDoubleInput(sc, (CYAN + "Grade:\t" + RESET));
+						
+						System.out.println("====================================================\n");
 						
 						addCourseToStudent(conn, id, course, grade);
 					}
 					else if (choice == 6)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Update a Student's Grade\n" + RESET);
+						
+						int id = getIntInput(sc, (CYAN + "Student ID:\t" + RESET));
 						
 						boolean confirm = confirmStudent(conn, sc, id);
 						
 						if (!confirm)
 						{
-							System.out.println();
+							System.out.println("\n====================================================\n\n");
 							continue;
 						}
 						
-						String course = getStringInput(sc, "Enter course name: ");
-						double grade = getDoubleInput(sc, "Enter course grade: ");
+						System.out.println("\n====================================================\n\n");
+						String course = getStringInput(sc, (CYAN + "Course:\t" + RESET));
+						double grade = getDoubleInput(sc, "Grade:\t");
 						
 						updateCourseGradeForStudent(conn, id, course, grade);
 					}
 					else if (choice == 7)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Remove a Course from a Student\n" + RESET);
+						
+						int id = getIntInput(sc, (CYAN + "Student ID:\t" + RESET));
 						
 						boolean confirm = confirmStudent(conn, sc, id);
 						
 						if (!confirm)
 						{
-							System.out.println();
+							System.out.println("\n====================================================\n\n");
 							continue;
 						}
 						
-						String course = getStringInput(sc, "Enter course to remove: ");
+						System.out.println("\n====================================================\n");
+						String course = getStringInput(sc, (CYAN + "Course to remove:\t" + RESET));
 						
 						removeCourseFromStudent(conn, id, course);
 					}
 					else if (choice == 8)
 					{
-						int id = getIntInput(sc, "Enter a student ID number: ");
+						System.out.println(UNDERLINE + "Remove a Student From Records\n" + RESET);
+						
+						int id = getIntInput(sc, "Student ID:\t");
 						
 						boolean confirm = confirmStudent(conn, sc, id);
 						
 						if (!confirm)
 						{
-							System.out.println();
+							System.out.println("\n====================================================\n\n");
 							continue;
 						}
 						
+						System.out.println("\n====================================================\n\n");
 						removeStudent(conn, id);
 					}
 					else if (choice == 9)
 					{
-						String sorter = getStringInput(sc, "Enter an attribute to sort by: ");
+						System.out.println(UNDERLINE + "Order Student Records\n" + RESET);
+						
+						String sorter = getStringInput(sc, (CYAN + "Enter an attribute to sort by:\t" + RESET));
 						System.out.println();
 						
 						sortedStudents(conn, sorter);
 					}
 					else if (choice == 0)
 					{
-						System.out.println(RED + "\tAre you sure you want to exit?" + RESET);
-						System.out.print("\t  ");
+						System.out.println(RED + "Are you sure you want to exit? (yes/no):" + RESET);
 						
 						String quit = sc.nextLine().toLowerCase();
 						System.out.println();
 						
-						if (quit.equals("yes"))
+						if (quit.trim().equals("yes"))
 						{
-							System.out.println(GREEN + "\tThank you, good bye\n" + RESET);
+							System.out.println(GREEN + "Thank you, good bye\n" + RESET);
+							System.out.println("====================================================\n");
 							break;
 						}
 						else
 						{
-							System.out.println("\tBack to Main Menu");
-							System.out.println();
+							System.out.println(GREEN + "Back to Main Menu\n" + RESET);
+							System.out.println("====================================================\n\n");
 						}
 					}
 					else
@@ -813,8 +837,9 @@ public class SQLiteTest
 				catch (InputMismatchException e)
 				{
 					sc.nextLine();
-					System.out.println(RED + "\tCould not convert that input" + RESET);
-					System.out.println("\n");
+					System.out.println("\n\n====================================================\n");
+					System.out.println(RED + "Could not convert that input" + RESET);
+					System.out.println("\n====================================================\n\n");
 				}
 			}
 		}
