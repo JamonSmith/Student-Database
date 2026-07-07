@@ -37,7 +37,6 @@ public class SQLiteTest
 			{
 				sc.nextLine();
 				System.out.println(RED + "\nEnter a valid integer\n" + RESET);
-				System.out.println();
 			}
 		}
 	}
@@ -78,7 +77,6 @@ public class SQLiteTest
 			{
 				sc.nextLine();
 				System.out.println(RED + "\nEnter a valid input\n" + RESET);
-				System.out.println();
 			}
 		}
 	}
@@ -181,7 +179,8 @@ public class SQLiteTest
 			
 			if (!rs.next())
 			{
-				System.out.println("\t" + id + RED + " not found" + RESET);
+				System.out.println("====================================================\n");
+				System.out.println(id + RED + " not found" + RESET);
 				return false;
 			}
 			
@@ -228,7 +227,7 @@ public class SQLiteTest
 			
 			if (!rs.next())
 			{
-				System.out.println("\t" + stuID + RED + " not found\n" + RESET);
+				System.out.println(stuID + RED + " not found\n" + RESET);
 				System.out.println("====================================================\n");
 				return;
 			}	
@@ -306,7 +305,9 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				System.out.println(CYAN + "Added:\t\t" + RESET + last + ", " + first + "\n");
+				System.out.println("\n====================================================\n");
+				System.out.println(GREEN + "Added:");
+				System.out.println(CYAN + "Student:\t\t" + RESET + last + ", " + first + "\n");
 				System.out.println("====================================================\n\n");
 			}
 			else
@@ -342,13 +343,15 @@ public class SQLiteTest
 							
 			PreparedStatement ps = conn.prepareStatement(query);
 			
-			ps.setString(1, first);
-			ps.setString(2, last);
+			ps.setString(1, first.trim());
+			ps.setString(2, last.trim());
 			ps.setInt(3, id);
 				
 			ps.executeUpdate();
 			
-			System.out.println("\n" + id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
+			System.out.println("\n====================================================\n");
+			System.out.println(GREEN + "Student Name Updated:" + RESET);
+			System.out.println(id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
 			System.out.println("\n====================================================\n\n");
 		}
 		catch (SQLException e)
@@ -377,7 +380,6 @@ public class SQLiteTest
 			ResultSet rs = ps.executeQuery();
 			
 			return rs.next();
-			
 		}
 		catch (SQLException e)
 		{
@@ -439,14 +441,14 @@ public class SQLiteTest
 			if (!studentExists(conn, id))
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
+				System.out.println("\n====================================================\n\n");
 				return;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
 				System.out.println(RED + "\nStudent has not taken " + RESET + course);
-				System.out.println("\n");
+				System.out.println("\n====================================================\n\n");
 				return;
 			}
 			
@@ -465,9 +467,11 @@ public class SQLiteTest
 			
 			ps.executeUpdate();
 			
+			System.out.println("\n====================================================\n");
+			System.out.println(GREEN + "Updated: ");
 			System.out.println(CYAN + "Student: " + RESET + id);
 			System.out.println(course + CYAN + " grade changed to: " + RESET + newGrade);
-			System.out.println("\n");				
+			System.out.println("\n====================================================\n\n");				
 		}
 		catch (SQLException e)
 		{
@@ -484,7 +488,6 @@ public class SQLiteTest
 			if (!studentExists(conn, id))
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println(UNDERLINE + "Add a Course to a Student\n" + RESET);
 				return;
 			}
 			
@@ -528,7 +531,7 @@ public class SQLiteTest
 			if (!studentExists(conn, id))
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
+				System.out.println("\n====================================================\n\n");
 				return;
 			}
 			
@@ -556,9 +559,9 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				System.out.println(CYAN + "\nRows affected: " + RESET + rows);
-				System.out.println(CYAN + "Student: " + RESET + id + CYAN + " removed\n" + RESET);
-				System.out.println("====================================================\n");
+				System.out.println(GREEN + "Removed:");
+				System.out.println(CYAN + "Student: " + RESET + id);
+				System.out.println("\n====================================================\n");
 			}
 			else
 			{
@@ -759,9 +762,9 @@ public class SQLiteTest
 							continue;
 						}
 						
-						System.out.println("\n====================================================\n\n");
+						System.out.println("\n====================================================\n");
 						String course = getStringInput(sc, (CYAN + "Course:\t" + RESET));
-						double grade = getDoubleInput(sc, "Grade:\t");
+						double grade = getDoubleInput(sc, (CYAN + "Grade:\t" + RESET));
 						
 						updateCourseGradeForStudent(conn, id, course, grade);
 					}
@@ -779,8 +782,9 @@ public class SQLiteTest
 							continue;
 						}
 						
-						System.out.println("\n====================================================\n");
+						System.out.println("====================================================\n");
 						String course = getStringInput(sc, (CYAN + "Course to remove:\t" + RESET));
+						System.out.println("\n====================================================\n");
 						
 						removeCourseFromStudent(conn, id, course);
 					}
