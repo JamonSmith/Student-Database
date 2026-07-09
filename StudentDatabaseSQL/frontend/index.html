@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+	
+		<title> Student Database V4 </title>
+		
+		<link rel="stylesheet" href="style.css">
+		
+		<script src="script.js" defer></script>
+		<!--
+		-->
+	
+	</head>
+	
+	<body>
+	
+		<h1> Student Database V4 </h1>
+		
+		<div>
+	
+			<h2> Student Management </h2>
+			
+			<form>
+			
+				<label for="firstName"> First Name </label>
+				<br>
+				
+				<input id="firstName" type="text" placeholder="Enter First Name" required>
+				<br>
+				<br>
+				
+				<label for="lastName"> Last Name </label>
+				<br>
+				
+				<input id="lastName" type="text" placeholder="Enter Last Name" required>
+				<br>
+				<br>
+			
+				<button type="button" id="addStudentButton" class="student-button"> Add Student </button>
+			
+				<button type="button" id="renameStudentButton" class="student-button"> Rename Student </button>
+				
+				<button type="button" id="removeStudentButton" class="student-button"> Remove Student </button>
+			
+			</form>
+			
+			<!--
+			<br>
+			<br>
+			<br>
+			-->
+			
+		</div>
+	
+		<div>
+	
+			<h2> Course Management </h2>
+			
+			<form>
+			
+				<label for="studentID"> Student ID </label>
+				<br>
+				
+				<input id="studentID" type="number" placeholder="Enter Student ID" min="10000" max="99999">
+				<br>
+				<br>
+				
+				<button id="addCourseButton" class="course-button"> Add Course </button>
+				
+				<button id="updateGradeButton" class="course-button"> Update Grade </button>
+				
+				<button id="removeCourseButton" class="course-button"> Remove Course </button>
+			
+			</form>
+			
+			<!--
+			<br>
+			<br>
+			<br>
+			-->
+			
+		</div>
+		
+		<div>
+	
+			<h2> View Records </h2>
+			
+			<button id="allStudentsButton" class="records-button"> Show All Students </button>
+			
+			<button id="oneStudentButton"class="records-button"> Show One Student </button>
+			
+			<button id="sortStudentsButton" class="records-button"> Sort Students </button>
+			
+			<table id="studentTable">
+			
+				<tr>
+				
+					<th> Student ID </th>
+					<th> First Name </th>
+					<th> Last Name </th>
+					<th> Average </th>
+				
+				</tr>
+				
+				<tr>
+				
+					<td> 10000 </td>
+					<td> Jamon </td>
+					<td> Smith </td>
+					<td> 99.20 </td>
+				
+				</tr>
+			
+			</table>
+			
+			<!--
+			<br>
+			<br>
+			<br>
+			-->
+		
+		</div>
+		
+		<!--
+		-->
+	
+	</body>
+	
+	<!--
+	-->
+
+</html>
