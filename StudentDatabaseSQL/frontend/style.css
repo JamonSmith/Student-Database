@@ -111,6 +111,18 @@ th, td
 	*/
 }
 
+.error
+{
+	color: red;
+	font-family: Arial; 
+}
+
+.success
+{
+	color: green;
+	font-family: Arial; 
+}
+
 input::placeholder
 {
 	text-align: center;
