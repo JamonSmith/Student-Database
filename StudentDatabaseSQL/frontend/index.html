@@ -41,7 +41,7 @@
 				<label for="studentID"> Student ID </label>
 				<br>
 				
-				<input id="studentID" type="number" placeholder="Enter ID Number"  min="10000" max="99999" required>
+				<input id="studentIDsm" type="number" placeholder="Enter ID Number"  min="10000" max="99999" required>
 				<p id="studentMessage">  </p>
 				<br>
 			
@@ -70,7 +70,7 @@
 				<label for="studentID"> Student ID </label>
 				<br>
 				
-				<input id="studentID" type="number" placeholder="Enter Student ID" min="10000" max="99999">
+				<input id="studentIDcm" type="number" placeholder="Enter Student ID" min="10000" max="99999">
 				<br>
 				<br>
 				
@@ -104,13 +104,14 @@
 			
 				<tr>
 				
-					<th> Student ID </th>
-					<th> First Name </th>
-					<th> Last Name </th>
-					<th> Average </th>
+					<th id="idHeader"> Student ID </th>
+					<th id="firstHeader"> First Name </th>
+					<th id="lastHeader"> Last Name </th>
+					<th id="avgHeader"> Average </th>
 				
 				</tr>
 				
+				<!--
 				<tr>
 				
 					<td> 10000 </td>
@@ -119,8 +120,11 @@
 					<td> 99.20 </td>
 				
 				</tr>
+				-->
 			
 			</table>
+			
+			<p id="studentCount">  </p> 
 			
 			<!--
 			<br>

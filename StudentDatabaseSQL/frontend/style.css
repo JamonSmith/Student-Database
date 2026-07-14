@@ -74,6 +74,11 @@ th, td
 	padding: 8px;
 }
 
+th
+{
+	cursor: pointer;
+}
+
 .student-button
 {
 	
@@ -126,4 +131,15 @@ th, td
 input::placeholder
 {
 	text-align: center;
+}
+
+tr:nth-child(even)
+{
+	background-color: #f2f2f2;
+}
+
+button:disabled
+{
+	opacity: 0.5;
+	cursor: not-allowed;
 }

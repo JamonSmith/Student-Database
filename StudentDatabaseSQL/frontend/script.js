@@ -2,7 +2,7 @@
 
 let firstBox = document.getElementById("firstName");
 let lastBox = document.getElementById("lastName");
-let studentIDBox = document.getElementById("studentID");
+let studentIDBox = document.getElementById("studentIDsm");
 
 let addStudentButton = document.getElementById("addStudentButton");
 let renameStudentButton = document.getElementById("renameStudentButton");
@@ -10,6 +10,10 @@ let removeStudentButton = document.getElementById("removeStudentButton");
 
 let studentMessage = document.getElementById("studentMessage");
 let studentTable = document.getElementById("studentTable");
+let idHeader = document.getElementById("idHeader");
+let firstHeader = document.getElementById("firstHeader");
+let lastHeader = document.getElementById("lastHeader");
+let avgHeader = document.getElementById("avgHeader");
 
 let addCourseButton = document.getElementById("addCourseButton");
 let updateGradeButton = document.getElementById("updateGradeButton");
@@ -19,11 +23,25 @@ let allStudentsButton = document.getElementById("allStudentsButton");
 let oneStudentButton = document.getElementById("oneStudentButton");
 let sortStudentsButton = document.getElementById("sortStudentsButton");
 
+let studentCount = document.getElementById("studentCount");
+
 
 // Application State
 
 let nextStudentID = 10001;
 let messageTimeout;
+const IDCOL = 0;
+const FIRSTNAMECOL = 1;
+const LASTNAMECOL = 2;
+const AVGCOL = 3;
+let asc = true;
+let currSortCol = IDCOL;
+let students = [{
+					id: 10000,
+					firstName: "Jamon",
+					lastName: "Smith",
+					average: 99.20
+				}];
 
 
 // Helper Functions
@@ -65,19 +83,33 @@ function getID()
 	return id;
 }
 
-function findStudentRowByID(id)
+function findStudentIndexByID(id)
 {
-	for (let i = 1; i < studentTable.rows.length; i++)
+	for (let i = 0; i < students.length; i++)
 	{
-		let currID = parseInt(studentTable.rows[i].cells[0].textContent);
-		
-		if (id === currID)
+		if (id === students[i].id)
 		{
-			return studentTable.rows[i];
+			return i;
 		}
 	}
 	
-	return null;
+	return -1;
+}
+
+function updateStudentCount()
+{
+	studentCount.textContent = "Total Students: " + students.length;
+}
+
+function buttonStates()
+{
+	let first = firstBox.value.trim();
+	let last = lastBox.value.trim();
+	let id = studentIDBox.value.trim();
+	
+	addStudentButton.disabled = (first === "" || last === "") || id !== "";
+	renameStudentButton.disabled = (first === "" && last === "") || id === "";
+	removeStudentButton.disabled = !((first === "" && last === "") && id !== "");
 }
 
 
@@ -96,6 +128,27 @@ function addStudentRow(id, first, last, avg)
 	firstCell.textContent = first;
 	lastCell.textContent = last;
 	avgCell.textContent = avg;
+}
+
+function renderAllStudents()
+{
+	clearAllStudents();
+	
+	for (const s of students)
+	{
+		addStudentRow(s.id, s.firstName, s.lastName, s.average);
+	}
+	
+	allStudentsButton.disabled = true;
+	updateStudentCount();
+}
+
+function clearAllStudents()
+{
+	for (let i = studentTable.rows.length - 1; i > 0; i--)
+	{
+		studentTable.rows[i].remove();
+	}
 }
 
 
@@ -118,12 +171,22 @@ function addToTable()
 		return;
 	}
 	
-	addStudentRow(parseInt(nextStudentID), first, last, "N/A");
+	//addStudentRow(parseInt(nextStudentID), first, last, "N/A");
 	
+	let newStudent = {
+						id: nextStudentID,
+						firstName: first,
+						lastName: last,
+						average: "N/A"
+					};
+	
+	students.push(newStudent);
 	nextStudentID++;
 	
+	renderAllStudents();
 	inputMessage("success", "Student successfully added!", firstBox, 2000);
 	clearStudentForm();
+	buttonStates();
 	
 	//alert("MEEHEEEHEEHEEHEE >:)");
 }
@@ -145,30 +208,35 @@ function renameStudentRow()
 		return;
 	}
 	
-	let row = findStudentRowByID(id);
+	let ind = findStudentIndexByID(id);
 	
-	if (row === null)
+	if (ind < 0)
 	{
 		inputMessage("error", "Student not found", studentIDBox, 2000);
 		return;
 	}
 	
+	let student = students[ind];
+	
 	if (last === "")
 	{
-		row.cells[1].textContent = first;
+		student.firstName = first;
 	}
 	else if (first === "")
 	{
-		row.cells[2].textContent = last;
+		student.lastName = last;
 	}
 	else
 	{
-		row.cells[1].textContent = first;
-		row.cells[2].textContent = last;
+		student.firstName = first;
+		student.lastName = last;
 	}
+	
+	renderAllStudents();
 	
 	inputMessage("success", "Student name updated!", firstBox, 2000);
 	clearStudentForm();
+	buttonStates();
 }
 
 function removeStudentRow()
@@ -180,18 +248,17 @@ function removeStudentRow()
 		return;
 	}
 	
-	let row = findStudentRowByID(id);
+	let ind = findStudentIndexByID(id);
 	
-	if (row === null)
+	if (ind < 0)
 	{
 		inputMessage("error", "Student not found", studentIDBox, 2000);
 		return;
 	}
 	
-	let first = row.cells[1].textContent;
-	let last = row.cells[2].textContent;
+	let student = students[ind];
 	
-	let confirmed = confirm("Are you sure you want to remove: " + id + " " + first + " " + last + "?");
+	let confirmed = confirm("Are you sure you want to remove: " + student.id + " " + student.first + " " + student.last + "?");
 	
 	if (!confirmed)
 	{
@@ -199,13 +266,153 @@ function removeStudentRow()
 		return;
 	}
 	
-	row.remove();
+	students.splice(ind, 1);
+	renderAllStudents();
+	
 	inputMessage("success", "Record removed!", studentIDBox, 2000);
 	clearStudentForm();
+	buttonStates();
+}
+
+function sortStudents(col)
+{
+	if (currSortCol === col)
+	{
+		asc = !asc;
+	}
+	else 
+	{
+		currSortCol = col;
+		asc = true;
+	}
+	
+	students.sort(function(a, b) 
+	{ 
+		if(col === IDCOL)
+		{
+			let numA = a.id;
+			let numB = b.id;
+			
+			if (Number.isNaN(numA) && Number.isNaN(numB))
+			{
+				return 0;
+			}
+			
+			if (Number.isNaN(numA))
+			{
+				return 1;
+			}
+			
+			if (Number.isNaN(numB))
+			{
+				return -1;
+			}
+			
+			if (asc)
+			{
+				return numA - numB;
+			}
+			else
+			{
+				return numB - numA;
+			}
+		}
+		else if (col === FIRSTNAMECOL)
+		{
+			let valA = a.firstName;
+			let valB = b.firstName;
+			
+			if (asc)
+			{
+				return valA.localeCompare(valB); 
+			}
+			else
+			{
+				return valB.localeCompare(valA); 
+			}
+		}
+		else if (col === LASTNAMECOL)
+		{
+			let valA = a.lastName;
+			let valB = b.lastName;
+			
+			if (asc)
+			{
+				return valA.localeCompare(valB); 
+			}
+			else
+			{
+				return valB.localeCompare(valA); 
+			}
+		}
+		else
+		{
+			let numA = parseFloat(a.average);
+			let numB = parseFloat(b.average);
+			
+			if (Number.isNaN(numA) && Number.isNaN(numB))
+			{
+				return 0;
+			}
+			
+			if (Number.isNaN(numA))
+			{
+				return 1;
+			}
+			
+			if (Number.isNaN(numB))
+			{
+				return -1;
+			}
+			
+			if (asc)
+			{
+				return numA - numB;
+			}
+			else
+			{
+				return numB - numA;
+			}
+		}
+	});
+	
+	renderAllStudents();
+	
+	console.log(currSortCol);
+	console.log(asc);
+}
+
+function clearStudentTable()
+{
+	clearAllStudents();
+	
+	allStudentsButton.disabled = false;
+	updateStudentCount();
 }
 
 
+// Miscellaneous Debug Section
+
+
+
+
+// Initial Page Setup
+
+buttonStates();
+studentCount.textContent = "Total Students: " + (studentTable.rows.length - 1);
+renderAllStudents();
+
+
 // Event Listeners
+
+idHeader.addEventListener("click", function() { sortStudents(IDCOL); });
+firstHeader.addEventListener("click", function() { sortStudents(FIRSTNAMECOL); });
+lastHeader.addEventListener("click", function() { sortStudents(LASTNAMECOL); });
+avgHeader.addEventListener("click", function() { sortStudents(AVGCOL); });
+
+firstBox.addEventListener("input", buttonStates);
+lastBox.addEventListener("input", buttonStates);
+studentIDBox.addEventListener("input", buttonStates);
 
 addStudentButton.addEventListener("click", addToTable);
 addStudentButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#ff7f7f";});
@@ -228,12 +435,15 @@ updateGradeButton.addEventListener("mouseout", (event) => {event.target.style.ba
 removeCourseButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7fff7f";});
 removeCourseButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#00ff00";});
 
+allStudentsButton.addEventListener("click", renderAllStudents);
 allStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 allStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
+oneStudentButton.addEventListener("click", clearStudentTable);
 oneStudentButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 oneStudentButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
+//sortStudentsButton.addEventListener("click", sortStudents);
 sortStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 sortStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
