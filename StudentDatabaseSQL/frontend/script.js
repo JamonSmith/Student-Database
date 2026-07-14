@@ -2,18 +2,19 @@
 
 let firstBox = document.getElementById("firstName");
 let lastBox = document.getElementById("lastName");
-let studentIDBox = document.getElementById("studentIDsm");
+let studentIDBoxSM = document.getElementById("studentIDsm");
+
+let studentMessage = document.getElementById("studentMessage");
 
 let addStudentButton = document.getElementById("addStudentButton");
 let renameStudentButton = document.getElementById("renameStudentButton");
 let removeStudentButton = document.getElementById("removeStudentButton");
 
-let studentMessage = document.getElementById("studentMessage");
-let studentTable = document.getElementById("studentTable");
-let idHeader = document.getElementById("idHeader");
-let firstHeader = document.getElementById("firstHeader");
-let lastHeader = document.getElementById("lastHeader");
-let avgHeader = document.getElementById("avgHeader");
+let studentIDBoxCM = document.getElementById("studentIDcm");
+let courseBox = document.getElementById("courseName");
+let gradeBox = document.getElementById("courseGrade");
+
+let courseMessage = document.getElementById("courseMessage");
 
 let addCourseButton = document.getElementById("addCourseButton");
 let updateGradeButton = document.getElementById("updateGradeButton");
@@ -23,25 +24,80 @@ let allStudentsButton = document.getElementById("allStudentsButton");
 let oneStudentButton = document.getElementById("oneStudentButton");
 let sortStudentsButton = document.getElementById("sortStudentsButton");
 
+let idHeader = document.getElementById("idHeader");
+let firstHeader = document.getElementById("firstHeader");
+let lastHeader = document.getElementById("lastHeader");
+let avgHeader = document.getElementById("avgHeader");
+
+let studentTable = document.getElementById("studentTable");
 let studentCount = document.getElementById("studentCount");
+
+
+// Class
+
+class Student
+{
+	constructor (id, firstName, lastName, average = "N/A")
+	{
+		this.id = id;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.average = average;
+		this.courses = [];
+	}
+	
+	rename(firstName, lastName)
+	{
+		if (firstName !== "")
+		{
+			this.firstName = firstName;
+		}
+		
+		if (lastName !== "")
+		{
+			this.lastName = lastName;
+		}
+	}
+	
+	getFullName()
+	{
+		return this.firstName + " " + this.lastName;
+	}
+	
+	addCourse(name, grade = "N/A")
+	{
+		let course = new Course(name, grade);
+		this.courses.push(course);
+	}
+}
+
+class Course
+{
+	constructor(name, grade = "N/A")
+	{
+		this.name = name;
+		this.grade = grade;
+	}
+	
+	updateGrade(grade)
+	{
+		this.grade = grade;
+	}
+}
 
 
 // Application State
 
 let nextStudentID = 10001;
-let messageTimeout;
+let studentMessageTimeout;
+let courseMessageTimeout;
 const IDCOL = 0;
 const FIRSTNAMECOL = 1;
 const LASTNAMECOL = 2;
 const AVGCOL = 3;
 let asc = true;
 let currSortCol = IDCOL;
-let students = [{
-					id: 10000,
-					firstName: "Jamon",
-					lastName: "Smith",
-					average: 99.20
-				}];
+let students = [new Student(10000, "Jamon", "Smith", 99.25)];
 
 
 // Helper Functions
@@ -50,33 +106,57 @@ function clearStudentForm()
 {
 	firstBox.value = "";
 	lastBox.value = "";
-	studentIDBox.value = "";
+	studentIDBoxSM.value = "";
 }
 
-function timeoutMessage()
+function clearCourseForm()
+{
+	studentIDBoxCM.value = "";
+	courseBox.value = "";
+	gradeBox.value = "";
+}
+
+function timeoutStudentMessage()
 {
 	studentMessage.textContent = "";
 	studentMessage.className = "";
 }
 
-function inputMessage(type, message, focusElement, time)
+function timeoutCourseMessage()
 {
-	clearTimeout(messageTimeout);
+	courseMessage.textContent = "";
+	courseMessage.className = "";
+}
+
+function inputStudentMessage(type, message, focusElement, time)
+{
+	clearTimeout(studentMessageTimeout);
 	
 	studentMessage.className = type;
 	studentMessage.textContent = message;
 	focusElement.focus();
 	
-	messageTimeout = setTimeout(timeoutMessage, time);
+	studentMessageTimeout = setTimeout(timeoutStudentMessage, time);
+}
+
+function inputCourseMessage(type, message, focusElement, time)
+{
+	clearTimeout(courseMessageTimeout);
+	
+	courseMessage.className = type;
+	courseMessage.textContent = message;
+	focusElement.focus();
+	
+	courseMessageTimeout = setTimeout(timeoutCourseMessage, time);
 }
 
 function getID()
 {
-	let id = parseInt(studentIDBox.value);
+	let id = parseInt(studentIDBoxSM.value);
 	
 	if (Number.isNaN(id))
 	{
-		inputMessage("error", "Please provide an ID number", studentIDBox, 4000);
+		inputStudentMessage("error", "Please provide an ID number", studentIDBoxSM, 4000);
 		return null;
 	}
 	
@@ -101,15 +181,26 @@ function updateStudentCount()
 	studentCount.textContent = "Total Students: " + students.length;
 }
 
-function buttonStates()
+function studentButtonStates()
 {
 	let first = firstBox.value.trim();
 	let last = lastBox.value.trim();
-	let id = studentIDBox.value.trim();
+	let id = studentIDBoxSM.value.trim();
 	
 	addStudentButton.disabled = (first === "" || last === "") || id !== "";
 	renameStudentButton.disabled = (first === "" && last === "") || id === "";
 	removeStudentButton.disabled = !((first === "" && last === "") && id !== "");
+}
+
+function courseButtonStates()
+{
+	let id = studentIDBoxCM.value.trim();
+	let name = courseBox.value.trim();
+	let grade = gradeBox.value.trim();
+	
+	addCourseButton.disabled = id === "" || name === "";
+	updateGradeButton.disabled = id === "" || name === "" || grade === "";
+	removeCourseButton.disabled = (id === "" || name === "") || grade !== "";
 }
 
 
@@ -161,32 +252,27 @@ function addToTable()
 	
 	if (first === "")
 	{
-		inputMessage("error", "Please provide a first name", firstBox, 2000);
+		inputStudentMessage("error", "Please provide a first name", firstBox, 2000);
 		return;
 	}
 	
 	if (last === "")
 	{
-		inputMessage("error", "Please provide a last name", lastBox, 2000);
+		inputStudentMessage("error", "Please provide a last name", lastBox, 2000);
 		return;
 	}
 	
 	//addStudentRow(parseInt(nextStudentID), first, last, "N/A");
 	
-	let newStudent = {
-						id: nextStudentID,
-						firstName: first,
-						lastName: last,
-						average: "N/A"
-					};
+	let newStudent = new Student(nextStudentID, first, last);
 	
 	students.push(newStudent);
 	nextStudentID++;
 	
 	renderAllStudents();
-	inputMessage("success", "Student successfully added!", firstBox, 2000);
+	inputStudentMessage("success", "Student successfully added!", firstBox, 2000);
 	clearStudentForm();
-	buttonStates();
+	studentButtonStates();
 	
 	//alert("MEEHEEEHEEHEEHEE >:)");
 }
@@ -204,7 +290,7 @@ function renameStudentRow()
 	
 	if (first === "" && last === "")
 	{
-		inputMessage("error", "Please provide the name you wish to change in the corresponding box above", firstBox, 4000);
+		inputStudentMessage("error", "Please provide the name you wish to change in the corresponding box above", firstBox, 4000);
 		return;
 	}
 	
@@ -212,31 +298,19 @@ function renameStudentRow()
 	
 	if (ind < 0)
 	{
-		inputMessage("error", "Student not found", studentIDBox, 2000);
+		inputStudentMessage("error", "Student not found", studentIDBoxSM, 2000);
 		return;
 	}
 	
 	let student = students[ind];
 	
-	if (last === "")
-	{
-		student.firstName = first;
-	}
-	else if (first === "")
-	{
-		student.lastName = last;
-	}
-	else
-	{
-		student.firstName = first;
-		student.lastName = last;
-	}
+	student.rename(first, last);
 	
 	renderAllStudents();
 	
-	inputMessage("success", "Student name updated!", firstBox, 2000);
+	inputStudentMessage("success", "Student name updated!", firstBox, 2000);
 	clearStudentForm();
-	buttonStates();
+	studentButtonStates();
 }
 
 function removeStudentRow()
@@ -252,26 +326,75 @@ function removeStudentRow()
 	
 	if (ind < 0)
 	{
-		inputMessage("error", "Student not found", studentIDBox, 2000);
+		inputStudentMessage("error", "Student not found", studentIDBoxSM, 2000);
 		return;
 	}
 	
 	let student = students[ind];
 	
-	let confirmed = confirm("Are you sure you want to remove: " + student.id + " " + student.first + " " + student.last + "?");
+	let confirmed = confirm("Are you sure you want to remove: " + student.id + " " + student.getFullName() + "?");
 	
 	if (!confirmed)
 	{
-		inputMessage("error", "Student removal canceled", studentIDBox, 2000);
+		inputStudentMessage("error", "Student removal canceled", studentIDBoxSM, 2000);
 		return;
 	}
 	
 	students.splice(ind, 1);
 	renderAllStudents();
 	
-	inputMessage("success", "Record removed!", studentIDBox, 2000);
+	inputStudentMessage("success", "Record removed!", studentIDBoxSM, 2000);
 	clearStudentForm();
-	buttonStates();
+	studentButtonStates();
+}
+
+function addCourseToStudent()
+{
+	let id = parseInt(studentIDBoxCM.value);
+	let name = courseBox.value.trim();
+	let grade = gradeBox.value.trim();
+	
+	if (Number.isNaN(id) || id === "")
+	{
+		inputCourseMessage("error", "Please provide a valid ID number", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	if (name === "")
+	{
+		inputCourseMessage("error", "Please provide a course name", courseBox, 2000);
+		return;
+	}
+	
+	let ind = findStudentIndexByID(id);
+	
+	if (ind < 0)
+	{
+		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	let g = "N/A";
+	
+	if (grade !== "")
+	{
+		 g = parseFloat(grade);
+		 
+		 if (Number.isNaN(g) || g > 100 || g < 0)
+		 {
+			inputCourseMessage("error", "Grade must be a value within range [0, 100]", gradeBox, 2000);
+			return;
+		 }
+	}
+	
+	let student = students[ind];
+	
+	student.addCourse(name, g);
+	inputCourseMessage("success", "Course added", studentIDBoxCM, 2000);
+	clearCourseForm();
+	courseButtonStates();
+	
+	console.log(student.courses);
 }
 
 function sortStudents(col)
@@ -398,21 +521,17 @@ function clearStudentTable()
 
 // Initial Page Setup
 
-buttonStates();
+studentButtonStates();
+courseButtonStates();
 studentCount.textContent = "Total Students: " + (studentTable.rows.length - 1);
 renderAllStudents();
 
 
 // Event Listeners
 
-idHeader.addEventListener("click", function() { sortStudents(IDCOL); });
-firstHeader.addEventListener("click", function() { sortStudents(FIRSTNAMECOL); });
-lastHeader.addEventListener("click", function() { sortStudents(LASTNAMECOL); });
-avgHeader.addEventListener("click", function() { sortStudents(AVGCOL); });
-
-firstBox.addEventListener("input", buttonStates);
-lastBox.addEventListener("input", buttonStates);
-studentIDBox.addEventListener("input", buttonStates);
+firstBox.addEventListener("input", studentButtonStates);
+lastBox.addEventListener("input", studentButtonStates);
+studentIDBoxSM.addEventListener("input", studentButtonStates);
 
 addStudentButton.addEventListener("click", addToTable);
 addStudentButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#ff7f7f";});
@@ -426,6 +545,11 @@ removeStudentButton.addEventListener("click", removeStudentRow);
 removeStudentButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#ff7f7f";});
 removeStudentButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#ff0000";});
 
+studentIDBoxCM.addEventListener("input", courseButtonStates);
+courseBox.addEventListener("input", courseButtonStates);
+gradeBox.addEventListener("input", courseButtonStates);
+
+addCourseButton.addEventListener("click", addCourseToStudent);
 addCourseButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7fff7f";});
 addCourseButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#00ff00";});
 
@@ -446,6 +570,11 @@ oneStudentButton.addEventListener("mouseout", (event) => {event.target.style.bac
 //sortStudentsButton.addEventListener("click", sortStudents);
 sortStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 sortStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
+
+idHeader.addEventListener("click", function() { sortStudents(IDCOL); });
+firstHeader.addEventListener("click", function() { sortStudents(FIRSTNAMECOL); });
+lastHeader.addEventListener("click", function() { sortStudents(LASTNAMECOL); });
+avgHeader.addEventListener("click", function() { sortStudents(AVGCOL); });
 
 
 /*

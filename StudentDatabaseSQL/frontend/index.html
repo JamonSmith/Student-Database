@@ -70,15 +70,29 @@
 				<label for="studentID"> Student ID </label>
 				<br>
 				
-				<input id="studentIDcm" type="number" placeholder="Enter Student ID" min="10000" max="99999">
+				<input id="studentIDcm" type="number" placeholder="Enter Student ID" min="10000" max="99999" required>
 				<br>
 				<br>
 				
-				<button id="addCourseButton" class="course-button"> Add Course </button>
+				<label for="courseName"> Course Name </label>
+				<br>
 				
-				<button id="updateGradeButton" class="course-button"> Update Grade </button>
+				<input id="courseName" type="text" placeholder="Enter Course" required>
+				<br>
+				<br>
 				
-				<button id="removeCourseButton" class="course-button"> Remove Course </button>
+				<label for="courseGrade"> Course Grade </label>
+				<br>
+				
+				<input id="courseGrade" type="number" placeholder="Enter Student ID" min="0" max="100" step="0.01" required>
+				<p id="courseMessage">  </p>
+				<br>
+				
+				<button type="button" id="addCourseButton" class="course-button"> Add Course </button>
+				
+				<button type="button" id="updateGradeButton" class="course-button"> Update Grade </button>
+				
+				<button type="button" id="removeCourseButton" class="course-button"> Remove Course </button>
 			
 			</form>
 			
