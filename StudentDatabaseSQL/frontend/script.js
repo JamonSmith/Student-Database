@@ -20,6 +20,10 @@ let addCourseButton = document.getElementById("addCourseButton");
 let updateGradeButton = document.getElementById("updateGradeButton");
 let removeCourseButton = document.getElementById("removeCourseButton");
 
+let studentIDBoxVR = document.getElementById("studentIDvr");
+
+let recordsMessage = document.getElementById("recordsMessage");
+
 let allStudentsButton = document.getElementById("allStudentsButton");
 let oneStudentButton = document.getElementById("oneStudentButton");
 let sortStudentsButton = document.getElementById("sortStudentsButton");
@@ -29,8 +33,19 @@ let firstHeader = document.getElementById("firstHeader");
 let lastHeader = document.getElementById("lastHeader");
 let avgHeader = document.getElementById("avgHeader");
 
+let studentTableTitle = document.getElementById("studentTableTitle");
 let studentTable = document.getElementById("studentTable");
 let studentCount = document.getElementById("studentCount");
+
+let studentIDandName = document.getElementById("studentIDandName");
+
+let courseHeader = document.getElementById("courseHeader");
+let gradeHeader = document.getElementById("gradeHeader");
+
+let courseTableTitle = document.getElementById("courseTableTitle");
+let courseTable = document.getElementById("courseTable");
+let studentAverage = document.getElementById("studentAverage");
+let courseCount = document.getElementById("courseCount");
 
 
 // Class
@@ -64,10 +79,95 @@ class Student
 		return this.firstName + " " + this.lastName;
 	}
 	
+	findCourseIndex(name)
+	{
+		for (let i = 0; i < this.courses.length; i++)
+		{
+			if(this.courses[i].name.toLowerCase() === name.toLowerCase())
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	addCourse(name, grade = "N/A")
 	{
+		let ind = this.findCourseIndex(name);
+		
+		if (ind >= 0)
+		{
+			return false;
+		}
+		
 		let course = new Course(name, grade);
 		this.courses.push(course);
+		
+		this.calculateAverage();
+		
+		return true;
+	}
+	
+	removeCourse(name)
+	{
+		let ind = this.findCourseIndex(name);
+		
+		if (ind < 0)
+		{
+			return false;
+		}
+		
+		this.courses.splice(ind, 1);
+		this.calculateAverage();
+		
+		return true;
+	}
+	
+	updateCourseGrade(name, grade)
+	{
+		let ind = this.findCourseIndex(name)
+		
+		if (ind < 0)
+		{
+			return false;
+		}
+		
+		let course = this.courses[ind];
+		course.updateGrade(grade);
+		this.calculateAverage();
+		
+		return true;
+	}
+	
+	getCourseCount()
+	{
+		return this.courses.length;
+	}
+	
+	calculateAverage()
+	{
+		let sum = 0.0;
+		let numGrades = 0;
+		
+		for (let i = 0; i < this.courses.length; i++)
+		{
+			if (this.courses[i].grade === "N/A")
+			{
+				continue;
+			}
+			
+			sum += this.courses[i].grade;
+			numGrades++;
+		}
+		
+		if (numGrades === 0)
+		{
+			this.average = "N/A";
+			return;
+		}
+		
+		this.average = sum / numGrades;
 	}
 }
 
@@ -91,13 +191,15 @@ class Course
 let nextStudentID = 10001;
 let studentMessageTimeout;
 let courseMessageTimeout;
+let recordsMessageTimeout;
 const IDCOL = 0;
 const FIRSTNAMECOL = 1;
 const LASTNAMECOL = 2;
 const AVGCOL = 3;
 let asc = true;
 let currSortCol = IDCOL;
-let students = [new Student(10000, "Jamon", "Smith", 99.25)];
+let students = [new Student(10000, "Jamon", "Smith")];
+let selectedStudentID = null;
 
 
 // Helper Functions
@@ -128,6 +230,12 @@ function timeoutCourseMessage()
 	courseMessage.className = "";
 }
 
+function timeoutRecordsMessage()
+{
+	recordsMessage.textContent = "";
+	recordsMessage.className = "";
+}
+
 function inputStudentMessage(type, message, focusElement, time)
 {
 	clearTimeout(studentMessageTimeout);
@@ -148,6 +256,17 @@ function inputCourseMessage(type, message, focusElement, time)
 	focusElement.focus();
 	
 	courseMessageTimeout = setTimeout(timeoutCourseMessage, time);
+}
+
+function inputRecordsMessage(type, message, focusElement, time)
+{
+	clearTimeout(recordsMessageTimeout);
+	
+	recordsMessage.className = type;
+	recordsMessage.textContent = message;
+	focusElement.focus();
+	
+	recordsMessageTimeout = setTimeout(timeoutRecordsMessage, time);
 }
 
 function getID()
@@ -178,7 +297,14 @@ function findStudentIndexByID(id)
 
 function updateStudentCount()
 {
-	studentCount.textContent = "Total Students: " + students.length;
+	if (!allStudentsButton.disabled)
+	{
+		studentCount.textContent = "";	
+	}
+	else
+	{	
+		studentCount.textContent = "Total Students: " + students.length;
+	}
 }
 
 function studentButtonStates()
@@ -203,6 +329,35 @@ function courseButtonStates()
 	removeCourseButton.disabled = (id === "" || name === "") || grade !== "";
 }
 
+function recordsButtonStates()
+{
+	let id = studentIDBoxVR.value.trim();
+	
+	oneStudentButton.disabled = id === "";
+}
+
+function refreshRecordsView()
+{
+	if (selectedStudentID === null)
+	{
+		renderAllStudents();
+		return;
+	}
+	
+	let ind = findStudentIndexByID(selectedStudentID);
+	
+	if (ind < 0)
+	{
+		selectedStudentID = null;
+		renderAllStudents();
+		return;
+	}
+	
+	let student = students[ind];
+	
+	renderStudentCourses(student);
+}
+
 
 // Table Functions
 
@@ -223,7 +378,10 @@ function addStudentRow(id, first, last, avg)
 
 function renderAllStudents()
 {
+	selectedStudentID = null;
+	
 	clearAllStudents();
+	clearAllCourses();
 	
 	for (const s of students)
 	{
@@ -240,6 +398,52 @@ function clearAllStudents()
 	{
 		studentTable.rows[i].remove();
 	}
+	
+	studentCount.textContent = "";
+}
+
+function addStudentCourseRow(course, grade)
+{
+	let newRow = courseTable.insertRow();
+	
+	let courseCell = newRow.insertCell(0);
+	let gradeCell = newRow.insertCell(1);
+	
+	courseCell.textContent = course;
+	gradeCell.textContent = grade;
+}
+
+function renderStudentCourses(student)
+{
+	clearAllStudents();
+	clearAllCourses();
+	
+	courseTableTitle.textContent = "Selected Student:";
+	studentIDandName.textContent = student.id + ": " + student.lastName + ", " + student.firstName;
+	
+	for (const course of student.courses)
+	{
+		addStudentCourseRow(course.name, course.grade);
+	}
+	
+	studentAverage.textContent = "Average: " + student.average;
+	courseCount.textContent = "Courses taken: " + student.getCourseCount();
+	
+	allStudentsButton.disabled = false;
+}
+ 
+function clearAllCourses()
+{
+	courseTableTitle.textContent = "";
+	studentIDandName.textContent = "";
+	
+	for (let i = courseTable.rows.length - 1; i > 0; i--)
+	{
+		courseTable.rows[i].remove();
+	}
+	
+	studentAverage.textContent = "";
+	courseCount.textContent = "";
 }
 
 
@@ -269,7 +473,7 @@ function addToTable()
 	students.push(newStudent);
 	nextStudentID++;
 	
-	renderAllStudents();
+	refreshRecordsView();
 	inputStudentMessage("success", "Student successfully added!", firstBox, 2000);
 	clearStudentForm();
 	studentButtonStates();
@@ -306,8 +510,7 @@ function renameStudentRow()
 	
 	student.rename(first, last);
 	
-	renderAllStudents();
-	
+	refreshRecordsView();
 	inputStudentMessage("success", "Student name updated!", firstBox, 2000);
 	clearStudentForm();
 	studentButtonStates();
@@ -341,7 +544,7 @@ function removeStudentRow()
 	}
 	
 	students.splice(ind, 1);
-	renderAllStudents();
+	refreshRecordsView();
 	
 	inputStudentMessage("success", "Record removed!", studentIDBoxSM, 2000);
 	clearStudentForm();
@@ -354,7 +557,7 @@ function addCourseToStudent()
 	let name = courseBox.value.trim();
 	let grade = gradeBox.value.trim();
 	
-	if (Number.isNaN(id) || id === "")
+	if (Number.isNaN(id))
 	{
 		inputCourseMessage("error", "Please provide a valid ID number", studentIDBoxCM, 2000);
 		return;
@@ -389,12 +592,127 @@ function addCourseToStudent()
 	
 	let student = students[ind];
 	
-	student.addCourse(name, g);
-	inputCourseMessage("success", "Course added", studentIDBoxCM, 2000);
-	clearCourseForm();
-	courseButtonStates();
+	let added = student.addCourse(name, g);
 	
-	console.log(student.courses);
+	if (added)
+	{
+		refreshRecordsView();
+		inputCourseMessage("success", "Course added", studentIDBoxCM, 2000);
+		clearCourseForm();
+	}
+	else
+	{
+		inputCourseMessage("error", "Course already present in student's transcript", courseBox, 2000);
+		courseBox.value = "";
+		gradeBox.value = "";
+	}
+	
+	
+	
+	courseButtonStates();
+}
+
+function updateCourseGradeForStudent()
+{
+	let id = parseInt(studentIDBoxCM.value);
+	let course = courseBox.value.trim();
+	let grade = gradeBox.value.trim();
+	
+	if (Number.isNaN(id))
+	{
+		inputCourseMessage("error", "Please provide a valid ID number", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	if (course === "")
+	{
+		inputCourseMessage("error", "Please provide a course name", courseBox, 2000);
+		return;
+	}
+	
+	if (grade === "")
+	{
+		inputCourseMessage("error", "Please provide a new course grade", gradeBox, 2000);
+		return;
+	}
+	
+	let g = parseFloat(grade);
+		 
+	if (Number.isNaN(g) || g > 100 || g < 0)
+	{
+		inputCourseMessage("error", "Grade must be a value within range [0, 100]", gradeBox, 2000);
+		return;
+	}
+	
+	let ind = findStudentIndexByID(id);
+	
+	if (ind < 0)
+	{
+		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	let student = students[ind];
+	let updated = student.updateCourseGrade(course, g);
+	
+	if (updated)
+	{
+		refreshRecordsView();
+		inputCourseMessage("success", "Course grade updated", studentIDBoxCM, 2000);
+		clearCourseForm();
+	}
+	else
+	{
+		inputCourseMessage("error", "Course not found in student's transcript", courseBox, 2000);
+		courseBox.value = "";
+		gradeBox.value = "";
+	}
+	
+	courseButtonStates();
+}
+
+function removeCourseFromStudent()
+{
+	let id = parseInt(studentIDBoxCM.value);
+	let course = courseBox.value.trim();
+	
+	if (Number.isNaN(id))
+	{
+		inputCourseMessage("error", "Please provide a valid ID number", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	if (course === "")
+	{
+		inputCourseMessage("error", "Please provide a course name", courseBox, 2000);
+		return;
+	}
+	
+	let ind = findStudentIndexByID(id);
+	
+	if (ind < 0)
+	{
+		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
+		return;
+	}
+	
+	let student = students[ind];
+	let removed = student.removeCourse(course);
+	
+	if (removed)
+	{
+		refreshRecordsView();
+		inputCourseMessage("success", "Course removed", studentIDBoxCM, 2000);
+		clearCourseForm();
+	}
+	else
+	{
+		inputCourseMessage("error", "Course not found in student's transcript", courseBox, 2000);
+		courseBox.value = "";
+		gradeBox.value = "";
+	}
+	
+	courseButtonStates();
 }
 
 function sortStudents(col)
@@ -499,10 +817,38 @@ function sortStudents(col)
 		}
 	});
 	
-	renderAllStudents();
+	refreshRecordsView();
 	
 	console.log(currSortCol);
 	console.log(asc);
+}
+
+function showOneStudent()
+{
+	let id = parseInt(studentIDBoxVR.value);
+	
+	if (Number.isNaN(id))
+	{
+		inputRecordsMessage("error", "Please provide a valid ID number", studentIDBoxVR, 2000);
+		return;
+	}
+	
+	let ind = findStudentIndexByID(id);
+	
+	if (ind < 0)
+	{
+		inputRecordsMessage("error", "Student not found", studentIDBoxVR, 2000);
+		return;
+	}
+	
+	let student = students[ind];
+	
+	selectedStudentID = student.id;
+	renderStudentCourses(student);
+	
+	studentIDBoxVR.value = "";
+	studentIDBoxVR.focus();
+	recordsButtonStates();
 }
 
 function clearStudentTable()
@@ -511,6 +857,11 @@ function clearStudentTable()
 	
 	allStudentsButton.disabled = false;
 	updateStudentCount();
+}
+
+function clearCourseTable()
+{
+	clearAllCourses();
 }
 
 
@@ -523,6 +874,7 @@ function clearStudentTable()
 
 studentButtonStates();
 courseButtonStates();
+recordsButtonStates();
 studentCount.textContent = "Total Students: " + (studentTable.rows.length - 1);
 renderAllStudents();
 
@@ -553,21 +905,25 @@ addCourseButton.addEventListener("click", addCourseToStudent);
 addCourseButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7fff7f";});
 addCourseButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#00ff00";});
 
+updateGradeButton.addEventListener("click", updateCourseGradeForStudent);
 updateGradeButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7fff7f";});
 updateGradeButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#00ff00";});
 
+removeCourseButton.addEventListener("click", removeCourseFromStudent);
 removeCourseButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7fff7f";});
 removeCourseButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#00ff00";});
+
+studentIDBoxVR.addEventListener("input", recordsButtonStates);
 
 allStudentsButton.addEventListener("click", renderAllStudents);
 allStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 allStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
-oneStudentButton.addEventListener("click", clearStudentTable);
+oneStudentButton.addEventListener("click", showOneStudent);
 oneStudentButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 oneStudentButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
-//sortStudentsButton.addEventListener("click", sortStudents);
+sortStudentsButton.addEventListener("click", function() { clearStudentTable(); clearCourseTable(); });
 sortStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 sortStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
 
