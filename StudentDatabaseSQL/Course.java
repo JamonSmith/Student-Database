@@ -1,17 +1,17 @@
 public class Course
 {
-	private String courseName;
+	private String name;
 	private Double grade;
 	
-	public Course(String courseName, Double grade)
+	public Course(String name, Double grade)
 	{
-		this.courseName = courseName;
+		this.name = name;
 		this.grade = grade;
 	}
 	
 	public String getName()
 	{
-		return courseName;
+		return name;
 	}
 	
 	public void setGrade(Double grade)
@@ -22,5 +22,13 @@ public class Course
 	public Double getGrade()
 	{
 		return grade;
+	}
+	
+	public String toJSON()
+	{
+		return "{ " +
+					"\"name\": \"" + name + "\", " +
+					"\"grade\": " + grade +
+			   " }";	
 	}
 }

@@ -11,15 +11,15 @@ public class TestHandler implements HttpHandler
 	@Override
 	public void handle(HttpExchange exchange) throws IOException
 	{
-		String response = "Student Database backend is running";
+		String response = "Student database backend is running";
 		
 		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
 		
 		exchange.sendResponseHeaders(200, responseBytes.length);
 		
-		try (OutputStream op = exchange.getResponseBody())
+		try (OutputStream output = exchange.getResponseBody())
 		{
-			op.write(responseBytes);
+			output.write(responseBytes);
 		}
 	}
 }

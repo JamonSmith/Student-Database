@@ -434,8 +434,6 @@ public class SQLiteTest
 		}	
 	}
 	
-	
-	
 	public static void main(String[] args)
 	{
 		System.out.println();
@@ -445,46 +443,18 @@ public class SQLiteTest
 			HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 			
 			server.createContext("/test", new TestHandler());
+			server.createContext("/students", new StudentHandler(url));
 			
 			server.start();
 			
-			System.out.println(GREEN + "Server running at http://localhost:8000/test" + RESET);
+			System.out.println(GREEN + "Server running at http://localhost:8000/test\n" + RESET);
+			
+			System.out.println(GREEN + "json file at http://localhost:8000/students" + RESET);
 		}
 		catch (IOException e)
 		{
 			System.out.println(RED + "Could not start server");
 			System.out.println(e.getMessage() + RESET);
 		}
-		
-		/*
-		try (Connection conn = DriverManager.getConnection(url))
-		{
-			System.out.println(GREEN + "Connection to " + RESET + url + GREEN + " successful!\n" + RESET);
-			
-			List<Student> s = getAllStudents(conn);
-			
-			for (Student stu : s)
-			{
-				System.out.println(UNDERLINE + GREEN + stu.getID() + CYAN + "\t" + stu.getLastName() + RESET + "\t" + stu.getAverage());
-				
-				System.out.println();
-				
-				for (Course c : stu.getCourses())
-				{
-					System.out.println(c.getName() + "\t" + c.getGrade());
-				}
-				
-				System.out.println("\n");
-			}
-
-			
-		}
-		catch (SQLException e)
-		{
-			System.out.println(RED + "Connection to " + RESET + url + RED + " failed");
-			System.out.println(e.getMessage() + RESET);
-		}
-		*/
-		
 	}
 }

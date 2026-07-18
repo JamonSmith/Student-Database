@@ -333,7 +333,9 @@ function recordsButtonStates()
 {
 	let id = studentIDBoxVR.value.trim();
 	
+	allStudentsButton.disabled = studentTable.rows.length !== 1;
 	oneStudentButton.disabled = id === "";
+	sortStudentsButton.disabled = studentTable.rows.length === 1 && courseTableTitle.textContent === "";
 }
 
 function refreshRecordsView()
@@ -390,6 +392,8 @@ function renderAllStudents()
 	
 	allStudentsButton.disabled = true;
 	updateStudentCount();
+	
+	recordsButtonStates();
 }
 
 function clearAllStudents()
@@ -418,7 +422,7 @@ function renderStudentCourses(student)
 	clearAllStudents();
 	clearAllCourses();
 	
-	courseTableTitle.textContent = "Selected Student:";
+	courseTableTitle.textContent = "Selected Student Info:";
 	studentIDandName.textContent = student.id + ": " + student.lastName + ", " + student.firstName;
 	
 	for (const course of student.courses)
@@ -429,7 +433,7 @@ function renderStudentCourses(student)
 	studentAverage.textContent = "Average: " + student.average;
 	courseCount.textContent = "Courses taken: " + student.getCourseCount();
 	
-	allStudentsButton.disabled = false;
+	recordsButtonStates();
 }
  
 function clearAllCourses()
@@ -862,6 +866,8 @@ function clearStudentTable()
 function clearCourseTable()
 {
 	clearAllCourses();
+	
+	recordsButtonStates();
 }
 
 

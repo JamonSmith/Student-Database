@@ -55,4 +55,32 @@ public class Student
 	{
 		return courses;
 	}
+	
+	public String toJSON()
+	{
+		StringBuilder json = new StringBuilder("{\n");
+		
+		StringBuilder jsonCourseArray = new StringBuilder("[\n");
+			
+			for (int i = 0; i < courses.size(); i++)
+			{
+				jsonCourseArray.append(courses.get(i).toJSON());
+				
+				if (i < courses.size() - 1)
+				{
+					jsonCourseArray.append(",\n");
+				}
+			}
+			
+			jsonCourseArray.append("\n]");
+		
+		json.append("\"id\": " + id + ", ");
+		json.append("\"firstName\": \"" + firstName + "\", ");
+		json.append("\"lastName\": \"" + lastName + "\", ");
+		json.append("\"average\": " + average + ", ");
+		json.append("\"courses\": " + jsonCourseArray.toString());
+		json.append("\n}");
+		
+		return json.toString();
+	}
 }
