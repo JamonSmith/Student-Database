@@ -198,7 +198,7 @@ const LASTNAMECOL = 2;
 const AVGCOL = 3;
 let asc = true;
 let currSortCol = IDCOL;
-let students = [new Student(10000, "Jamon", "Smith")];
+let students = [];
 let selectedStudentID = null;
 
 
@@ -358,6 +358,47 @@ function refreshRecordsView()
 	let student = students[ind];
 	
 	renderStudentCourses(student);
+}
+
+async function loadStudentsFromBackend()
+{
+	try
+	{
+		let response = await fetch("http://localhost:8000/students");
+		
+		if(!response.ok)
+		{
+			throw new Error("HTTP Error: " + response.status);
+		}
+		
+		let data = await response.json();
+		
+		students = data.map(function(studentData)
+		{
+			let student = new Student(
+				studentData.id, 
+				studentData.firstName, 
+				studentData.lastName,
+				studentData.average ?? "N/A"
+			);
+			
+			student.courses = studentData.courses.map(function(courseData)
+			{
+				return new Course(
+					courseData.name,
+					courseData.grade ?? "N/A"
+				);
+			});
+			
+			return student;
+		});
+		
+		renderAllStudents();
+	}
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+	}
 }
 
 
@@ -881,6 +922,7 @@ function clearCourseTable()
 studentButtonStates();
 courseButtonStates();
 recordsButtonStates();
+loadStudentsFromBackend();
 studentCount.textContent = "Total Students: " + (studentTable.rows.length - 1);
 renderAllStudents();
 

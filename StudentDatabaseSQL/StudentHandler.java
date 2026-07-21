@@ -1,8 +1,11 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.InputStream;
 
 import java.nio.charset.StandardCharsets;
 
@@ -25,33 +28,105 @@ public class StudentHandler implements HttpHandler
 	@Override
 	public void handle(HttpExchange exchange) throws IOException
 	{
-		String response;
+		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
 		
-		try (Connection conn = DriverManager.getConnection(url))
+		String method = exchange.getRequestMethod();
+		
+		if (method.equals("OPTIONS"))
 		{
-			List<Student> students = SQLiteTest.getAllStudents(conn);
+			exchange.sendResponseHeaders(204, -1);
+			exchange.close();
+			return;
+		}
+		
+		String response;
 			
-			StringBuilder jsonArray = new StringBuilder("[\n");
-			
-			for (int i = 0; i < students.size(); i++)
+		if (method.equals("GET"))
+		{
+			try (Connection conn = DriverManager.getConnection(url))
 			{
-				jsonArray.append(students.get(i).toJSON());
+				List<Student> students = SQLiteTest.getAllStudents(conn);
 				
-				if (i < students.size() - 1)
+				StringBuilder jsonArray = new StringBuilder("[\n");
+				
+				for (int i = 0; i < students.size(); i++)
 				{
-					jsonArray.append(",\n");
+					jsonArray.append(students.get(i).toJSON());
+					
+					if (i < students.size() - 1)
+					{
+						jsonArray.append(",\n");
+					}
 				}
+				
+				jsonArray.append("\n]");
+				
+				response = jsonArray.toString();
+			}
+			catch (SQLException e)
+			{
+				response = """
+							{
+								"error": "Could not retrieve data"
+							}
+							""";
+			}
+		}	
+		else if (method.equals("POST"))
+		{
+			InputStream input = exchange.getRequestBody();
+			
+			byte[] requestBytes = input.readAllBytes();
+			
+			String requestBody = new String(requestBytes, StandardCharsets.UTF_8);
+			
+			System.out.println("POST body: ");
+			System.out.println(requestBody + "\n");
+			
+			response = """
+						{
+							"message": "POST request received >:("
+						}
+						""";
+						
+			Gson gson = new Gson();
+
+			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
+			
+			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
+			
+			System.out.println(request.getFirstName());
+			System.out.println(request.getLastName() + "\n");
+			
+			try (Connection conn = DriverManager.getConnection(url))
+			{
+				SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
+				
+				response = """
+						{
+							"message": "Student successfully added"
+						}
+						""";
+			}
+			catch (SQLException e)
+			{
+				response = """
+							{
+								"error": "Could not add student"
+							}
+							""";
 			}
 			
-			jsonArray.append("\n]");
-			
-			response = jsonArray.toString();
-		}
-		catch (SQLException e)
+			/*
+			*/
+		}		
+		else		
 		{
 			response = """
 						{
-							"error": "Could not retrieve data"
+							"error": "Method not allowed"
 						}
 						""";
 		}
@@ -59,7 +134,8 @@ public class StudentHandler implements HttpHandler
 		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
 		
 		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-		
+		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+
 		exchange.sendResponseHeaders(200, responseBytes.length);
 		
 		try (OutputStream output = exchange.getResponseBody())
