@@ -181,7 +181,7 @@ public class SQLiteTest
 		}
 	}
 	
-	public static void renameStudent(Connection conn, int id, String first, String last)
+	public static boolean renameStudent(Connection conn, int id, String first, String last)
 	{
 		try 
 		{
@@ -189,19 +189,35 @@ public class SQLiteTest
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
 				System.out.println("\n");
-				return;
+				return false;
 			}
 			
 			String query = """
 							UPDATE students
-							SET first_name = ?, last_name = ? 
+							SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name) 
 							WHERE student_id = ?;
 							""";				
 							
 			PreparedStatement ps = conn.prepareStatement(query);
 			
-			ps.setString(1, first.trim());
-			ps.setString(2, last.trim());
+			if (first == null || first.isBlank())
+			{
+				ps.setNull(1, java.sql.Types.VARCHAR);
+			}
+			else
+			{
+				ps.setString(1, first.trim());				
+			}
+			
+			if (last == null || last.isBlank())
+			{
+				ps.setNull(2, java.sql.Types.VARCHAR);
+			}
+			else
+			{
+				ps.setString(2, last.trim());				
+			}
+			
 			ps.setInt(3, id);
 				
 			ps.executeUpdate();
@@ -210,12 +226,14 @@ public class SQLiteTest
 			System.out.println(GREEN + "Student Name Updated:" + RESET);
 			System.out.println(id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
 			System.out.println("\n====================================================\n\n");
+			return true;
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
+			System.out.println(RED + "Could not rename student");
 			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}
 	}
 	
@@ -247,7 +265,7 @@ public class SQLiteTest
 		}
 	}
 	
-	public static void addCourseToStudent(Connection conn, int id, String course, double grade)
+	public static void addCourseToStudent(Connection conn, int id, String course, Double grade)
 	{
 		try
 		{
@@ -274,7 +292,15 @@ public class SQLiteTest
 			
 			ps.setInt(1, id);
 			ps.setString(2, course);
-			ps.setDouble(3, grade);
+			
+			if (grade == null)
+			{
+				ps.setNull(3, java.sql.Types.REAL);
+			}
+			else
+			{
+				ps.setDouble(3, grade);
+			}
 			
 			ps.executeUpdate();
 			
@@ -291,7 +317,7 @@ public class SQLiteTest
 		}
 	}
 	
-	public static void updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade)
+	public static boolean updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade)
 	{
 		try
 		{
@@ -299,14 +325,14 @@ public class SQLiteTest
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
 				System.out.println("\n====================================================\n\n");
-				return;
+				return false;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
 				System.out.println(RED + "\nStudent has not taken " + RESET + course);
 				System.out.println("\n====================================================\n\n");
-				return;
+				return false;
 			}
 			
 			String query = """
@@ -328,31 +354,33 @@ public class SQLiteTest
 			System.out.println(GREEN + "Updated: ");
 			System.out.println(CYAN + "Student: " + RESET + id);
 			System.out.println(course + CYAN + " grade changed to: " + RESET + newGrade);
-			System.out.println("\n====================================================\n\n");				
+			System.out.println("\n====================================================\n\n");
+			return true;
 		}
 		catch (SQLException e)
 		{
 			System.out.println(RED + "Something went wrong");
 			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}
 	}
 	
-	public static void removeCourseFromStudent(Connection conn, int id, String course)
+	public static boolean removeCourseFromStudent(Connection conn, int id, String course)
 	{
 		try
 		{
 			if (!studentExists(conn, id))
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
-				return;
+				return false;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
 				System.out.println(RED + "\nStudent has not taken " + RESET + course);
 				System.out.println("\n====================================================\n\n");
-				return;
+				return false;
 			}
 			
 			String query = """
@@ -371,17 +399,18 @@ public class SQLiteTest
 			System.out.println(GREEN + "\nRemoved:");
 			System.out.println(CYAN + "Course:\t" + RESET + course);
 			System.out.println("\n====================================================\n\n");				
-			
+			return true;
 		}
 		catch (SQLException e)
 		{
 			System.out.println(RED + "Something went wrong");
 			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}
 	}
 	
-	public static void removeStudent(Connection conn, int id)
+	public static boolean removeStudent(Connection conn, int id)
 	{
 		try
 		{		
@@ -389,7 +418,7 @@ public class SQLiteTest
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
 				System.out.println("\n====================================================\n\n");
-				return;
+				return false;
 			}
 			
 			String query = """
@@ -419,11 +448,13 @@ public class SQLiteTest
 				System.out.println(GREEN + "Removed:");
 				System.out.println(CYAN + "Student: " + RESET + id);
 				System.out.println("\n====================================================\n");
+				return true;
 			}
 			else
 			{
 				System.out.println(RED + "\nStudent not found\n" + RESET);
 				System.out.println("====================================================\n");
+				return false;
 			}
 		}
 		catch (SQLException e)
@@ -431,6 +462,7 @@ public class SQLiteTest
 			System.out.println(RED + "Something went wrong");
 			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}	
 	}
 	
@@ -444,6 +476,7 @@ public class SQLiteTest
 			
 			server.createContext("/test", new TestHandler());
 			server.createContext("/students", new StudentHandler(url));
+			server.createContext("/courses", new CourseHandler(url));
 			
 			server.start();
 			

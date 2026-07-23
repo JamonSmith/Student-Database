@@ -13,13 +13,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import java.util.List;
-
-public class StudentHandler implements HttpHandler
+public class CourseHandler implements HttpHandler
 {
 	private String databaseURL;
 	
-	public StudentHandler(String databaseURL)
+	public CourseHandler(String databaseURL)
 	{
 		this.databaseURL = databaseURL;
 	}
@@ -28,7 +26,7 @@ public class StudentHandler implements HttpHandler
 	public void handle(HttpExchange exchange) throws IOException
 	{
 		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "POST, PUT, DELETE, OPTIONS");
 		exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
 		
 		String method = exchange.getRequestMethod();
@@ -41,39 +39,9 @@ public class StudentHandler implements HttpHandler
 		}
 		
 		String response;
+		int statusCode = 0;
 			
-		if (method.equals("GET"))
-		{
-			try (Connection conn = DriverManager.getConnection(databaseURL))
-			{
-				List<Student> students = SQLiteTest.getAllStudents(conn);
-				
-				StringBuilder jsonArray = new StringBuilder("[\n");
-				
-				for (int i = 0; i < students.size(); i++)
-				{
-					jsonArray.append(students.get(i).toJSON());
-					
-					if (i < students.size() - 1)
-					{
-						jsonArray.append(",\n");
-					}
-				}
-				
-				jsonArray.append("\n]");
-				
-				response = jsonArray.toString();
-			}
-			catch (SQLException e)
-			{
-				response = """
-							{
-								"error": "Could not retrieve data"
-							}
-							""";
-			}
-		}	
-		else if (method.equals("POST"))
+		if (method.equals("POST"))
 		{
 			InputStream input = exchange.getRequestBody();
 			
@@ -94,18 +62,19 @@ public class StudentHandler implements HttpHandler
 
 			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
 			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
+			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
+			System.out.println(request.getID());
+			System.out.println(request.getCourseName());
+			System.out.println(request.getGrade() + "\n");
 			
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
+				SQLiteTest.addCourseToStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
 				
 				response = """
 						{
-							"message": "Student successfully added"
+							"message": "Course successfully added"
 						}
 						""";
 			}
@@ -113,7 +82,7 @@ public class StudentHandler implements HttpHandler
 			{
 				response = """
 							{
-								"error": "Could not add student"
+								"error": "Could not add course"
 							}
 							""";
 			}
@@ -142,31 +111,35 @@ public class StudentHandler implements HttpHandler
 
 			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
 			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
+			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
 			System.out.println(request.getID());
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
+			System.out.println(request.getCourseName());
+			System.out.println(request.getGrade() + "\n");
 			
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
+				boolean updated = SQLiteTest.updateCourseGradeForStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
 				
-				if (renamed)
+				if (updated)
 				{
 					response = """
 							{
-								"message": "Student successfully renamed"
+								"message": "Course grade successfully updated"
 							}
 							""";
+							
+					statusCode = 200;
 				}	
 				else
 				{
 					response = """
 							{
-								"message": "Student could not be renamed"
+								"message": "Grade could not be updated"
 							}
 							""";
+					
+					statusCode = 404;
 				}
 				
 			}
@@ -174,7 +147,7 @@ public class StudentHandler implements HttpHandler
 			{
 				response = """
 							{
-								"error": "Could not add student"
+								"error": "Grade could not be updated"
 							}
 							""";
 			}
@@ -200,42 +173,35 @@ public class StudentHandler implements HttpHandler
 
 			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
 			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
-			
-			/*
-			if (request.getID() == null)
-			{
-				response = """
-							{
-								"message": "Student ID number required"
-							}
-							""";
-			}
-			*/
+			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
 			System.out.println(request.getID());
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
+			System.out.println(request.getCourseName());
+			System.out.println(request.getGrade() + "\n");
 			
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
+				boolean deleted = SQLiteTest.removeCourseFromStudent(conn, request.getID(), request.getCourseName());
 				
 				if (deleted)
 				{
 					response = """
 							{
-								"message": "Student successfully deleted"
+								"message": "Course successfully removed"
 							}
 							""";
+							
+					statusCode = 200;
 				}	
 				else
 				{
 					response = """
 							{
-								"message": "Student could not be deleted"
+								"message": "Could not remove course"
 							}
 							""";
+							
+					statusCode = 404;
 				}
 				
 			}
@@ -243,7 +209,7 @@ public class StudentHandler implements HttpHandler
 			{
 				response = """
 							{
-								"error": "Could not delete student"
+								"error": "Could not remove course"
 							}
 							""";
 			}
@@ -262,7 +228,7 @@ public class StudentHandler implements HttpHandler
 		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
 		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
 
-		exchange.sendResponseHeaders(200, responseBytes.length);
+		exchange.sendResponseHeaders(statusCode, responseBytes.length);
 		
 		try (OutputStream output = exchange.getResponseBody())
 		{

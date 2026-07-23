@@ -494,7 +494,7 @@ function clearAllCourses()
 
 // Feature Functions
 
-function addToTable()
+async function addToTable()
 {
 	let first = firstBox.value.trim();
 	let last = lastBox.value.trim();
@@ -511,22 +511,48 @@ function addToTable()
 		return;
 	}
 	
-	//addStudentRow(parseInt(nextStudentID), first, last, "N/A");
-	
-	let newStudent = new Student(nextStudentID, first, last);
-	
-	students.push(newStudent);
-	nextStudentID++;
-	
-	refreshRecordsView();
-	inputStudentMessage("success", "Student successfully added!", firstBox, 2000);
-	clearStudentForm();
-	studentButtonStates();
+	try
+	{
+		let response = await fetch("http://localhost:8000/students", 
+						{ 
+							method: "POST", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								firstName: first, 
+								lastName: last
+							}) 
+						});
+						
+		if (!response.ok)
+		{
+			throw new Error("HTTP Error: " + response.status);
+		}
+		
+		let data = await response.json();
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputStudentMessage("success", "Student successfully added!", firstBox, 2000);	
+		
+		clearStudentForm();
+		studentButtonStates();
+	}
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputStudentMessage("error", "Could not add student", firstBox, 2000);	
+	}
 	
 	//alert("MEEHEEEHEEHEEHEE >:)");
 }
 
-function renameStudentRow()
+async function renameStudentRow()
 {
 	let id = getID();
 	let first = firstBox.value.trim();
@@ -551,17 +577,47 @@ function renameStudentRow()
 		return;
 	}
 	
-	let student = students[ind];
-	
-	student.rename(first, last);
-	
-	refreshRecordsView();
-	inputStudentMessage("success", "Student name updated!", firstBox, 2000);
-	clearStudentForm();
-	studentButtonStates();
+	try
+	{
+		let response = await fetch("http://localhost:8000/students", 
+						{ 
+							method: "PUT", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id, 
+								firstName: first, 
+								lastName: last
+							}) 
+						});
+						
+		if (!response.ok)
+		{
+			throw new Error("HTTP Error: " + response.status);
+		}
+		
+		let data = await response.json();
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputStudentMessage("success", "Student successfully renamed!", firstBox, 2000);	
+		
+		clearStudentForm();
+		studentButtonStates();
+	}
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputStudentMessage("error", "Could not rename student", firstBox, 2000);	
+	}
 }
 
-function removeStudentRow()
+async function removeStudentRow()
 {
 	let id = getID();
 	
@@ -588,15 +644,45 @@ function removeStudentRow()
 		return;
 	}
 	
-	students.splice(ind, 1);
-	refreshRecordsView();
-	
-	inputStudentMessage("success", "Record removed!", studentIDBoxSM, 2000);
-	clearStudentForm();
-	studentButtonStates();
+	try
+	{
+		let response = await fetch("http://localhost:8000/students", 
+						{ 
+							method: "DELETE", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id
+							}) 
+						});
+						
+		if (!response.ok)
+		{
+			throw new Error("HTTP Error: " + response.status);
+		}
+		
+		let data = await response.json();
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputStudentMessage("success", "Record removed!", firstBox, 2000);	
+		
+		clearStudentForm();
+		studentButtonStates();
+	}
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputStudentMessage("error", "Could not remove student", firstBox, 2000);	
+	}
 }
 
-function addCourseToStudent()
+async function addCourseToStudent()
 {
 	let id = parseInt(studentIDBoxCM.value);
 	let name = courseBox.value.trim();
@@ -635,29 +721,72 @@ function addCourseToStudent()
 		 }
 	}
 	
-	let student = students[ind];
-	
-	let added = student.addCourse(name, g);
-	
-	if (added)
+	try
 	{
-		refreshRecordsView();
-		inputCourseMessage("success", "Course added", studentIDBoxCM, 2000);
-		clearCourseForm();
-	}
-	else
-	{
-		inputCourseMessage("error", "Course already present in student's transcript", courseBox, 2000);
+		let response;
+		
+		if (grade === "")
+		{
+			response = await fetch("http://localhost:8000/courses", 	
+						{ 
+							method: "POST", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id, 
+								courseName: name
+							}) 
+						});
+		}
+		else
+		{
+			response = await fetch("http://localhost:8000/courses", 	
+						{ 
+							method: "POST", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id, 
+								courseName: name,
+								courseGrade: g
+							}) 
+						});
+		}
+		
+						
+		if (!response.ok)
+		{
+			throw new Error("HTTP Error: " + response.status);
+		}
+		
+		let data = await response.json();
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputCourseMessage("success", "Course added!", studentIDBoxCM, 2000);	
+		
+		studentIDBoxCM.value = "";
 		courseBox.value = "";
 		gradeBox.value = "";
+		
+		courseButtonStates();
 	}
-	
-	
-	
-	courseButtonStates();
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputCourseMessage("error", "Could not add course", studentIDBoxCM, 2000);	
+	}
 }
 
-function updateCourseGradeForStudent()
+async function updateCourseGradeForStudent()
 {
 	let id = parseInt(studentIDBoxCM.value);
 	let course = courseBox.value.trim();
@@ -697,26 +826,51 @@ function updateCourseGradeForStudent()
 		return;
 	}
 	
-	let student = students[ind];
-	let updated = student.updateCourseGrade(course, g);
-	
-	if (updated)
+	try
 	{
-		refreshRecordsView();
-		inputCourseMessage("success", "Course grade updated", studentIDBoxCM, 2000);
-		clearCourseForm();
-	}
-	else
-	{
-		inputCourseMessage("error", "Course not found in student's transcript", courseBox, 2000);
+		let response = await fetch("http://localhost:8000/courses", 	
+						{ 
+							method: "PUT", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id, 
+								courseName: course,
+								courseGrade: g
+							}) 
+						});
+		
+		let data = await response.json();
+						
+		if (!response.ok)
+		{
+			throw new Error(data.error || "Could not update course grade");
+		}
+		
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputCourseMessage("success", "Course grade updated!", studentIDBoxCM, 2000);	
+		
+		studentIDBoxCM.value = "";
 		courseBox.value = "";
 		gradeBox.value = "";
+		
+		courseButtonStates();
 	}
-	
-	courseButtonStates();
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputCourseMessage("error", "Could not update course grade", studentIDBoxCM, 2000);	
+	}
 }
 
-function removeCourseFromStudent()
+async function removeCourseFromStudent()
 {
 	let id = parseInt(studentIDBoxCM.value);
 	let course = courseBox.value.trim();
@@ -741,23 +895,45 @@ function removeCourseFromStudent()
 		return;
 	}
 	
-	let student = students[ind];
-	let removed = student.removeCourse(course);
-	
-	if (removed)
+	try
 	{
-		refreshRecordsView();
-		inputCourseMessage("success", "Course removed", studentIDBoxCM, 2000);
-		clearCourseForm();
-	}
-	else
-	{
-		inputCourseMessage("error", "Course not found in student's transcript", courseBox, 2000);
+		let response = await fetch("http://localhost:8000/courses", 	
+						{ 
+							method: "DELETE", 
+							headers: 
+							{ 
+								"Content-Type": "application/json" 
+							}, 
+							body: JSON.stringify( 
+							{ 
+								studentID: id, 
+								courseName: course
+							}) 
+						});
+		
+		let data = await response.json();
+						
+		if (!response.ok)
+		{
+			throw new Error(data.error || "Could not remove course");
+		}
+		
+		console.log(data);
+		
+		await loadStudentsFromBackend();
+		
+		inputCourseMessage("success", "Course removed!", studentIDBoxCM, 2000);	
+		
+		studentIDBoxCM.value = "";
 		courseBox.value = "";
-		gradeBox.value = "";
+		
+		courseButtonStates();
 	}
-	
-	courseButtonStates();
+	catch (error)
+	{
+		console.error("Error occured: ", error);
+		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
+	}
 }
 
 function sortStudents(col)
