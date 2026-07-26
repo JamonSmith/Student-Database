@@ -188,7 +188,6 @@ class Course
 
 // Application State
 
-let nextStudentID = 10001;
 let studentMessageTimeout;
 let courseMessageTimeout;
 let recordsMessageTimeout;
@@ -393,7 +392,7 @@ async function loadStudentsFromBackend()
 			return student;
 		});
 		
-		renderAllStudents();
+		refreshRecordsView();
 	}
 	catch (error)
 	{
@@ -527,12 +526,12 @@ async function addToTable()
 							}) 
 						});
 						
+		let data = await response.json();
+		
 		if (!response.ok)
 		{
-			throw new Error("HTTP Error: " + response.status);
+			throw new Error(data.error || "Could not add student");
 		}
-		
-		let data = await response.json();
 		
 		console.log(data);
 		
@@ -546,7 +545,7 @@ async function addToTable()
 	catch (error)
 	{
 		console.error("Error occured: ", error);
-		inputStudentMessage("error", "Could not add student", firstBox, 2000);	
+		inputStudentMessage("error", error.message, firstBox, 2000);	
 	}
 	
 	//alert("MEEHEEEHEEHEEHEE >:)");
@@ -594,18 +593,18 @@ async function renameStudentRow()
 							}) 
 						});
 						
+		let data = await response.json();
+		
 		if (!response.ok)
 		{
-			throw new Error("HTTP Error: " + response.status);
+			throw new Error(data.error || "Could not rename student");
 		}
-		
-		let data = await response.json();
 		
 		console.log(data);
 		
 		await loadStudentsFromBackend();
 		
-		inputStudentMessage("success", "Student successfully renamed!", firstBox, 2000);	
+		inputStudentMessage("success", "Student successfully renamed!", studentIDBoxSM, 2000);	
 		
 		clearStudentForm();
 		studentButtonStates();
@@ -613,7 +612,7 @@ async function renameStudentRow()
 	catch (error)
 	{
 		console.error("Error occured: ", error);
-		inputStudentMessage("error", "Could not rename student", firstBox, 2000);	
+		inputStudentMessage("error", error.message, firstBox, 2000);	
 	}
 }
 
@@ -659,18 +658,18 @@ async function removeStudentRow()
 							}) 
 						});
 						
+		let data = await response.json();
+						
 		if (!response.ok)
 		{
-			throw new Error("HTTP Error: " + response.status);
+			throw new Error(data.error || "Could not remove student");
 		}
-		
-		let data = await response.json();
 		
 		console.log(data);
 		
 		await loadStudentsFromBackend();
 		
-		inputStudentMessage("success", "Record removed!", firstBox, 2000);	
+		inputStudentMessage("success", "Record removed!", studentIDBoxSM, 2000);	
 		
 		clearStudentForm();
 		studentButtonStates();
@@ -678,7 +677,7 @@ async function removeStudentRow()
 	catch (error)
 	{
 		console.error("Error occured: ", error);
-		inputStudentMessage("error", "Could not remove student", firstBox, 2000);	
+		inputStudentMessage("error", error.message, firstBox, 2000);	
 	}
 }
 
@@ -759,13 +758,12 @@ async function addCourseToStudent()
 						});
 		}
 		
+		let data = await response.json();
 						
 		if (!response.ok)
 		{
-			throw new Error("HTTP Error: " + response.status);
+			throw new Error(data.error || "Could not add course");
 		}
-		
-		let data = await response.json();
 		
 		console.log(data);
 		
@@ -782,7 +780,7 @@ async function addCourseToStudent()
 	catch (error)
 	{
 		console.error("Error occured: ", error);
-		inputCourseMessage("error", "Could not add course", studentIDBoxCM, 2000);	
+		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
 	}
 }
 
@@ -850,7 +848,6 @@ async function updateCourseGradeForStudent()
 			throw new Error(data.error || "Could not update course grade");
 		}
 		
-		
 		console.log(data);
 		
 		await loadStudentsFromBackend();
@@ -866,7 +863,7 @@ async function updateCourseGradeForStudent()
 	catch (error)
 	{
 		console.error("Error occured: ", error);
-		inputCourseMessage("error", "Could not update course grade", studentIDBoxCM, 2000);	
+		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
 	}
 }
 
@@ -1099,8 +1096,6 @@ studentButtonStates();
 courseButtonStates();
 recordsButtonStates();
 loadStudentsFromBackend();
-studentCount.textContent = "Total Students: " + (studentTable.rows.length - 1);
-renderAllStudents();
 
 
 // Event Listeners

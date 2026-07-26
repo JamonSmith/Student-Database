@@ -41,6 +41,7 @@ public class StudentHandler implements HttpHandler
 		}
 		
 		String response;
+		int statusCode = 500;
 			
 		if (method.equals("GET"))
 		{
@@ -62,6 +63,8 @@ public class StudentHandler implements HttpHandler
 				
 				jsonArray.append("\n]");
 				
+				statusCode = 200;
+				
 				response = jsonArray.toString();
 			}
 			catch (SQLException e)
@@ -71,181 +74,191 @@ public class StudentHandler implements HttpHandler
 								"error": "Could not retrieve data"
 							}
 							""";
+							
+				statusCode = 500;
 			}
 		}	
 		else if (method.equals("POST"))
 		{
-			InputStream input = exchange.getRequestBody();
+			String requestBody = readRequestBody(exchange);
 			
-			byte[] requestBytes = input.readAllBytes();
-			
-			String requestBody = new String(requestBytes, StandardCharsets.UTF_8);
-			
-			System.out.println("POST body: ");
-			System.out.println(requestBody + "\n");
-			
-			response = """
-						{
-							"message": "POST request received >:("
-						}
-						""";
-						
 			Gson gson = new Gson();
 
-			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
-			
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
-			
-			try (Connection conn = DriverManager.getConnection(databaseURL))
-			{
-				SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
-				
-				response = """
-						{
-							"message": "Student successfully added"
-						}
-						""";
-			}
-			catch (SQLException e)
+			if (request.getFirstName() == null || request.getFirstName().isBlank() || request.getLastName() == null || request.getLastName().isBlank())
 			{
 				response = """
 							{
-								"error": "Could not add student"
+								"error": "First name and last name must be provided"
 							}
 							""";
+				
+				statusCode = 400;
 			}
-			
-			/*
-			*/
+			else
+			{
+				try (Connection conn = DriverManager.getConnection(databaseURL))
+				{
+					boolean added = SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
+					
+					if (added)
+					{
+						response = """
+								{
+									"message": "Student successfully added"
+								}
+								""";
+						
+						statusCode = 200;
+					}
+					else
+					{
+						response = """
+									{
+										"error": "Could not add student"
+									}
+									""";
+	
+						statusCode = 500;
+					}
+				}
+				catch (SQLException e)
+				{
+					response = """
+								{
+									"error": "Could not add student"
+								}
+								""";
+	
+					statusCode = 500;
+				}
+			}
 		}	
 		else if (method.equals("PUT"))
 		{
-			InputStream input = exchange.getRequestBody();
+			String requestBody = readRequestBody(exchange);
 			
-			byte[] requestBytes = input.readAllBytes();
-			
-			String requestBody = new String(requestBytes, StandardCharsets.UTF_8);
-			
-			System.out.println("PUT body: ");
-			System.out.println(requestBody + "\n");
-			
-			response = """
-						{
-							"message": "POST request received >:("
-						}
-						""";
-						
 			Gson gson = new Gson();
 
-			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
-			
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
-			System.out.println(request.getID());
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
-			
-			try (Connection conn = DriverManager.getConnection(databaseURL))
-			{
-				boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
-				
-				if (renamed)
-				{
-					response = """
-							{
-								"message": "Student successfully renamed"
-							}
-							""";
-				}	
-				else
-				{
-					response = """
-							{
-								"message": "Student could not be renamed"
-							}
-							""";
-				}
-				
-			}
-			catch (SQLException e)
+			if (request.getID() == null)
 			{
 				response = """
+						{
+							"error": "Must provide ID number"
+						}
+						""";
+	
+				statusCode = 400;
+			}
+			else if ((request.getFirstName() == null || request.getFirstName().isBlank()) && (request.getLastName() == null || request.getLastName().isBlank()))
+			{
+				response = """
+						{
+							"error": "Must provide first name or last name"
+						}
+						""";
+	
+				statusCode = 400;
+			}
+			else
+			{
+				try (Connection conn = DriverManager.getConnection(databaseURL))
+				{
+					boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
+					
+					if (renamed)
+					{
+						response = """
+								{
+									"message": "Student successfully renamed"
+								}
+								""";
+						
+						statusCode = 200;
+					}	
+					else
+					{
+						response = """
+								{
+									"error": "Student could not be renamed"
+								}
+								""";
+								
+						statusCode = 404;
+					}
+					
+				}
+				catch (SQLException e)
+				{
+					response = """
 							{
-								"error": "Could not add student"
+								"error": "Could not rename student"
 							}
 							""";
+	
+					statusCode = 500;
+				}
 			}
 		}
 		else if (method.equals("DELETE"))
 		{
-			InputStream input = exchange.getRequestBody();
+			String requestBody = readRequestBody(exchange);
 			
-			byte[] requestBytes = input.readAllBytes();
-			
-			String requestBody = new String(requestBytes, StandardCharsets.UTF_8);
-			
-			System.out.println("DELETE body: ");
-			System.out.println(requestBody + "\n");
-			
-			response = """
-						{
-							"message": "POST request received >:("
-						}
-						""";
-						
 			Gson gson = new Gson();
 
-			System.out.println("Gson loaded: " + (gson instanceof Gson) + "\n");
-			
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
-			/*
 			if (request.getID() == null)
 			{
 				response = """
-							{
-								"message": "Student ID number required"
-							}
-							""";
+						{
+							"error": "Must provide ID number"
+						}
+						""";
+						
+				statusCode = 400;
 			}
-			*/
-			
-			System.out.println(request.getID());
-			System.out.println(request.getFirstName());
-			System.out.println(request.getLastName() + "\n");
-			
-			try (Connection conn = DriverManager.getConnection(databaseURL))
+			else
 			{
-				boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
-				
-				if (deleted)
+				try (Connection conn = DriverManager.getConnection(databaseURL))
 				{
-					response = """
-							{
-								"message": "Student successfully deleted"
-							}
-							""";
-				}	
-				else
-				{
-					response = """
-							{
-								"message": "Student could not be deleted"
-							}
-							""";
+					boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
+					
+					if (deleted)
+					{
+						response = """
+								{
+									"message": "Student successfully deleted"
+								}
+								""";
+								
+						statusCode = 200;
+					}	
+					else
+					{
+						response = """
+								{
+									"error": "Could not delete student"
+								}
+								""";
+								
+						statusCode = 404;
+					}
+					
 				}
-				
-			}
-			catch (SQLException e)
-			{
-				response = """
-							{
-								"error": "Could not delete student"
-							}
-							""";
+				catch (SQLException e)
+				{
+					response = """
+								{
+									"error": "Could not delete student"
+								}
+								""";
+								
+					statusCode = 500;
+				}
 			}
 		}
 		else		
@@ -255,14 +268,31 @@ public class StudentHandler implements HttpHandler
 							"error": "Method not allowed"
 						}
 						""";
+						
+			statusCode = 405;
 		}
 		
+		sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private String readRequestBody(HttpExchange exchange) throws IOException
+	{
+		try (InputStream input = exchange.getRequestBody())
+		{	
+			byte[] requestBytes = input.readAllBytes();
+			
+			return new String(requestBytes, StandardCharsets.UTF_8);
+		}
+	}
+	
+	private void sendJsonResponse(HttpExchange exchange, int statusCode, String response) throws IOException
+	{
 		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
 		
 		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
 		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
 
-		exchange.sendResponseHeaders(200, responseBytes.length);
+		exchange.sendResponseHeaders(statusCode, responseBytes.length);
 		
 		try (OutputStream output = exchange.getResponseBody())
 		{

@@ -144,7 +144,7 @@ public class SQLiteTest
 		}	
 	}
 		
-	public static void addStudent(Connection conn, String first, String last)
+	public static boolean addStudent(Connection conn, String first, String last)
 	{
 		try
 		{
@@ -166,11 +166,13 @@ public class SQLiteTest
 				System.out.println(GREEN + "Added:");
 				System.out.println(CYAN + "Student:\t\t" + RESET + last + ", " + first + "\n");
 				System.out.println("====================================================\n\n");
+				return true;
 			}
 			else
 			{
 				System.out.println(RED + "\nStudent could not be added\n" + RESET);
 				System.out.println("====================================================\n\n");
+				return false;
 			}
 		}
 		catch (SQLException e)
@@ -178,6 +180,7 @@ public class SQLiteTest
 			System.out.println(RED + "\tSomething went wrong");
 			System.out.println("\t" + e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}
 	}
 	
@@ -265,7 +268,7 @@ public class SQLiteTest
 		}
 	}
 	
-	public static void addCourseToStudent(Connection conn, int id, String course, Double grade)
+	public static boolean addCourseToStudent(Connection conn, int id, String course, Double grade)
 	{
 		try
 		{
@@ -273,14 +276,14 @@ public class SQLiteTest
 			{
 				System.out.println(RED + "\nStudent not found" + RESET);
 				System.out.println("\n");
-				return;
+				return false;
 			}
 			
 			if (courseExistsForStudent(conn, id, course))
 			{
 				System.out.println(RED + "Student has already taken " + RESET + course);
 				System.out.println("\n====================================================\n");
-				return;
+				return false;
 			}
 			
 			String query = """
@@ -308,12 +311,14 @@ public class SQLiteTest
 			System.out.println(CYAN + "Course:\t" + RESET + course);
 			System.out.println(CYAN + "Grade:\t" + RESET + grade);
 			System.out.println("\n====================================================\n\n");
+			return true;
 		}
 		catch (SQLException e)
 		{
 			System.out.println(RED + "Something went wrong");
 			System.out.println(e.getMessage() + RESET);
 			System.out.println("\n");
+			return false;
 		}
 	}
 	
