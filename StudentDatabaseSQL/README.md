@@ -1,32 +1,54 @@
 # StudentDatabaseSQL
 
-Java console application that extends my original Student Database project by replacing 
-text-file data storage with an SQLite relational database using JDBC. This version 
-demonstrates database design, SQL querying, and Java database connectivity while 
-maintaining the object-oriented structure of the original project.
+A full-stack student records management application built with Java, SQLite, HTML, CSS,
+and JavaScript. This Version extends my previous Student Database project by introducinga REST-style Java backend that communicates with a dynamic web-based frontend using the 
+Fetch API. Student and course data are stored in an SQLite relational database and 
+accessed through JDBC.
 
 ## Features
 
-- Display all students in the database (id number, first name, last name, and average
-  grade).
-- Display an individual student's transcript including courses, grades, and overall
+### Student Management
+- Display all students in the database
+- Display an individual student's transcript including enrolled courses and overall
   average.
-- Add new students to the database.
-- Rename existing students.
-- Add courses and grades to an existing student.
-- Update existing course grades in a student's records.
-- Remove courses from a student's records.
+- Add new students.
+- Rename existing students (supports updating first name, last name or both).
 - Remove a student and all their information.
-- Sort students by first name, last name, or average grade.
+
+### Course Management
+- Add courses existing student.
+- Support courses with or without assigned grades.
+- Update existing course grades.
+- Remove courses from a student's transcript.
+
+### Records and UI
+- Sort students by ID number, first name, last name, or average grade.
 - Confirmation prompts for destructive operations.
-- Input validation and SQL exception handling.
-- House all data in an SQLite relational database using JDBC.
+- Automatic synchronization between the frontend and SQLite database.
+- Client-side and server side input validation.
+- HTTP status codes and JSON responses for API communciation.
 
 ## Technologies
 
 - Java 21.0.11
-- SQLite 3.53.2
+- Java HTTP Server (com.sun.net.httpserver)
+- JavaScript (ES6)
+- SQLite 3.53.2.0
 - SQLite JDBC Driver (Xerial)
+- HTML5
+- CSS
+- Gson
+- Git/GitHub
+
+## Backend Technology
+
+- REST-style API endpoints
+- JSON serialization and deserialization
+- HTTP request routing
+- Request validation
+- CORS configuration
+- CRUD operations
+- Helper methods for request and response procressing
 
 ## SQL Skills Demonstrated
 
@@ -40,11 +62,12 @@ maintaining the object-oriented structure of the original project.
 - Aggregate functions (AVG, COUNT, MIN, MAX)
 - Prepared Statements
 - Parameterized Queries
+- Relational Database Design
 
-## Skills Demonstrated
+## SOftware Engineering Skills Demonstrated
 
 - Object-Oriented Programming
-- Relational Database Design
+- SQLite Relational Database Design
 - SQL Query Development
 - JDBC Database Connectivity
 - CRUD Operations
@@ -53,12 +76,10 @@ maintaining the object-oriented structure of the original project.
 - Console-Based Application Development
 - Refactoring and Code Reuse
 - Defensive Programming
-
-## Future Improvements
-
-- Refactor into separate database, model, and user interface classes.
-- Build web-based front end using HTML, CSS, and JavaScript while reusing existing
-  database logic.
+- Version Control using Git
+- JSON Processing
+- REST API Design
+- Full-Stack Web Design and Development
 
 ## Project Evolution
 
@@ -70,3 +91,22 @@ Version 2
 
 Version 3
 - SQLite relational database with JDBC connectivity and SQL queries.
+
+Version 4 
+- Complete migration to full stack web application.
+- Java REST-style backend using HttpServer.
+- JavaScript frontend using Fetch API.
+- JSON communication using GSON.
+- SQLite-backend CRUD operations for students and courses.
+- Dynamic frontend synchronized with the backend database.
+- Improved validation, error handling, and HTTP status codes.
+
+## Future Improvements
+
+- Implement resource-based endpoints.
+- Replace manual JSON construction with full GSON serialization.
+- Refactor shared handler functionality into reuseable utility classes.
+- Improve API responses with more descriptive results.
+- Add authentication and user accounts.
+- Containerize application with Docker.
+- Deploy application to a cloud hosting platform.
