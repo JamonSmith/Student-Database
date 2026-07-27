@@ -479,15 +479,13 @@ public class SQLiteTest
 		{
 			HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 			
-			server.createContext("/test", new TestHandler());
 			server.createContext("/students", new StudentHandler(url));
 			server.createContext("/courses", new CourseHandler(url));
 			
 			server.start();
 			
-			System.out.println(GREEN + "Server running at http://localhost:8000/test\n" + RESET);
-			
-			System.out.println(GREEN + "json file at http://localhost:8000/students" + RESET);
+			System.out.println(GREEN + "json file at http://localhost:8000/students\n" + RESET);
+			System.out.println(GREEN + "json file at http://localhost:8000/courses" + RESET);
 		}
 		catch (IOException e)
 		{
