@@ -119,20 +119,20 @@ Version 4
 
 ### View Records Section (With Database Connection, All Students)
 
-![Homepage](Photos/V4-View-Records-All-Students-By-ID.jpg)
+![View_All_Students](Photos/V4-View-Records-All-Students-By-ID.jpg)
 
 ### View Records Section (With Database Connection, One Students)
 
-![Homepage](Photos/V4-View-Records-One-Student.jpg)
+![View_One_Student](Photos/V4-View-Records-One-Student.jpg)
 
 ### SQLite Students Table
 
-![Homepage](Photos/stduents-table.jpg)
+![Students_Table](Photos/stduents-table.jpg)
 
 ### SQLite Grades Table
 
-![Homepage](Photos/grades-table.jpg)
+![Grades_Table](Photos/grades-table.jpg)
 
 ### Backend Data in JSON Form
 
-![Homepage](Photos/students-json.jpg)
+![JSON_Form](Photos/students-json.jpg)
