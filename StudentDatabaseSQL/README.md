@@ -110,3 +110,29 @@ Version 4
 - Add authentication and user accounts.
 - Containerize application with Docker.
 - Deploy application to a cloud hosting platform.
+
+## Screenshots
+
+### Homepage (No Database Connection)
+
+![Homepage](Photos/V4-Homepage-No-Database-Connection.jpg)
+
+### View Records Section (With Database Connection, All Students)
+
+![Homepage](Photos/V4-View-Records-All-Students-By-ID.jpg)
+
+### View Records Section (With Database Connection, One Students)
+
+![Homepage](Photos/V4-View-Records-One-Student.jpg)
+
+### SQLite Students Table
+
+![Homepage](Photos/stduents-table.jpg)
+
+### SQLite Grades Table
+
+![Homepage](Photos/grades-table.jpg)
+
+### Backend Data in JSON Form
+
+![Homepage](Photos/students-json.jpg)
