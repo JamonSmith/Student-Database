@@ -5,6 +5,10 @@ and JavaScript. This Version extends my previous Student Database project by int
 Fetch API. Student and course data are stored in an SQLite relational database and 
 accessed through JDBC.
 
+### Homepage (No Database Connection)
+
+![Homepage](Photos/V4-Homepage-No-Database-Connection.jpg)
+
 ## Features
 
 ### Student Management
@@ -111,11 +115,7 @@ Version 4
 - Containerize application with Docker.
 - Deploy application to a cloud hosting platform.
 
-## Screenshots
-
-### Homepage (No Database Connection)
-
-![Homepage](Photos/V4-Homepage-No-Database-Connection.jpg)
+## More Project Screenshots
 
 ### View Records Section (With Database Connection, All Students)
 
