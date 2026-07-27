@@ -127,11 +127,11 @@ Version 4
 
 ### SQLite Students Table
 
-![Students_Table](Photos/stduents-db-table.jpg)
+![Students_Table](Photos/stduents-db-students-table.jpg)
 
 ### SQLite Grades Table
 
-![Grades_Table](Photos/grades-db-table.jpg)
+![Grades_Table](Photos/stduents-db-grades-table.jpg)
 
 ### Backend Data in JSON Form
 
