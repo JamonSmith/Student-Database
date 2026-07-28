@@ -17,13 +17,8 @@ import java.net.InetSocketAddress;
 public class SQLiteTest
 {
 	public static final String RESET = "\u001B[0m";
-	public static final String UNDERLINE = "\u001B[4m";
 	public static final String RED = "\u001B[31m";
 	public static final String GREEN = "\u001B[32m";
-	public static final String YELLOW = "\u001B[33m";
-	public static final String BLUE = "\u001B[34m";
-	public static final String PURPLE = "\u001B[35m";
-	public static final String CYAN = "\u001B[36m";
 	
 	private static final String url = "jdbc:sqlite:students.db";
 	
@@ -62,8 +57,7 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Could not retrieve student's courses");
-			System.out.println(e.getMessage() + RESET + "\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 		}
 	}
 	
@@ -109,9 +103,7 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			
-			System.out.println(RED + "Could not retrieve students");
-			System.out.println(e.getMessage() + RESET + "\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 		}
 		
 		return students;
@@ -137,9 +129,7 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}	
 	}
@@ -162,24 +152,16 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				System.out.println("\n====================================================\n");
-				System.out.println(GREEN + "Added:");
-				System.out.println(CYAN + "Student:\t\t" + RESET + last + ", " + first + "\n");
-				System.out.println("====================================================\n\n");
 				return true;
 			}
 			else
 			{
-				System.out.println(RED + "\nStudent could not be added\n" + RESET);
-				System.out.println("====================================================\n\n");
 				return false;
 			}
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "\tSomething went wrong");
-			System.out.println("\t" + e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -190,8 +172,6 @@ public class SQLiteTest
 		{
 			if (!studentExists(conn, id))
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
 				return false;
 			}
 			
@@ -223,19 +203,12 @@ public class SQLiteTest
 			
 			ps.setInt(3, id);
 				
-			ps.executeUpdate();
-			
-			System.out.println("\n====================================================\n");
-			System.out.println(GREEN + "Student Name Updated:" + RESET);
-			System.out.println(id + CYAN + " name changed to:\t" + RESET + last + ", " + first);
-			System.out.println("\n====================================================\n\n");
+			ps.executeUpdate();			
 			return true;
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Could not rename student");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -261,9 +234,7 @@ public class SQLiteTest
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -274,15 +245,11 @@ public class SQLiteTest
 		{
 			if (!studentExists(conn, id))
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n");
 				return false;
 			}
 			
 			if (courseExistsForStudent(conn, id, course))
 			{
-				System.out.println(RED + "Student has already taken " + RESET + course);
-				System.out.println("\n====================================================\n");
 				return false;
 			}
 			
@@ -306,18 +273,11 @@ public class SQLiteTest
 			}
 			
 			ps.executeUpdate();
-			
-			System.out.println(GREEN + "Added:");
-			System.out.println(CYAN + "Course:\t" + RESET + course);
-			System.out.println(CYAN + "Grade:\t" + RESET + grade);
-			System.out.println("\n====================================================\n\n");
 			return true;
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -328,15 +288,11 @@ public class SQLiteTest
 		{
 			if (!studentExists(conn, id))
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n====================================================\n\n");
 				return false;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
-				System.out.println(RED + "\nStudent has not taken " + RESET + course);
-				System.out.println("\n====================================================\n\n");
 				return false;
 			}
 			
@@ -354,19 +310,11 @@ public class SQLiteTest
 			ps.setString(3, course);
 			
 			ps.executeUpdate();
-			
-			System.out.println("\n====================================================\n");
-			System.out.println(GREEN + "Updated: ");
-			System.out.println(CYAN + "Student: " + RESET + id);
-			System.out.println(course + CYAN + " grade changed to: " + RESET + newGrade);
-			System.out.println("\n====================================================\n\n");
 			return true;
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -377,14 +325,11 @@ public class SQLiteTest
 		{
 			if (!studentExists(conn, id))
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
 				return false;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
-				System.out.println(RED + "\nStudent has not taken " + RESET + course);
-				System.out.println("\n====================================================\n\n");
 				return false;
 			}
 			
@@ -400,17 +345,11 @@ public class SQLiteTest
 			ps.setString(2, course);
 			
 			ps.executeUpdate();
-			
-			System.out.println(GREEN + "\nRemoved:");
-			System.out.println(CYAN + "Course:\t" + RESET + course);
-			System.out.println("\n====================================================\n\n");				
 			return true;
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}
 	}
@@ -421,8 +360,6 @@ public class SQLiteTest
 		{		
 			if (!studentExists(conn, id))
 			{
-				System.out.println(RED + "\nStudent not found" + RESET);
-				System.out.println("\n====================================================\n\n");
 				return false;
 			}
 			
@@ -450,23 +387,16 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				System.out.println(GREEN + "Removed:");
-				System.out.println(CYAN + "Student: " + RESET + id);
-				System.out.println("\n====================================================\n");
 				return true;
 			}
 			else
 			{
-				System.out.println(RED + "\nStudent not found\n" + RESET);
-				System.out.println("====================================================\n");
 				return false;
 			}
 		}
 		catch (SQLException e)
 		{
-			System.out.println(RED + "Something went wrong");
-			System.out.println(e.getMessage() + RESET);
-			System.out.println("\n");
+			System.err.println(RED + e.getMessage() + RESET + "\n");
 			return false;
 		}	
 	}
@@ -490,7 +420,7 @@ public class SQLiteTest
 		catch (IOException e)
 		{
 			System.out.println(RED + "Could not start server");
-			System.out.println(e.getMessage() + RESET);
+			System.err.println(e.getMessage() + RESET + "\n");
 		}
 	}
 }

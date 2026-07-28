@@ -23,12 +23,4 @@ public class Course
 	{
 		return grade;
 	}
-	
-	public String toJSON()
-	{
-		return "{ " +
-					"\"name\": \"" + name + "\", " +
-					"\"grade\": " + grade +
-			   " }";	
-	}
 }

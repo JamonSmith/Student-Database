@@ -1,13 +1,9 @@
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.InputStream;
-
-import java.nio.charset.StandardCharsets;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,7 +11,8 @@ import java.sql.SQLException;
 
 public class CourseHandler implements HttpHandler
 {
-	private String databaseURL;
+	private final String databaseURL;
+	private final Gson gson = new Gson();
 	
 	public CourseHandler(String databaseURL)
 	{
@@ -25,16 +22,10 @@ public class CourseHandler implements HttpHandler
 	@Override
 	public void handle(HttpExchange exchange) throws IOException
 	{
-		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "POST, PUT, DELETE, OPTIONS");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+		String method = HttpUtils.setupCorsAndGetMethod(exchange, "POST, PUT, DELETE, OPTIONS");
 		
-		String method = exchange.getRequestMethod();
-		
-		if (method.equals("OPTIONS"))
+		if (HttpUtils.handleOptionsRequest(exchange))
 		{
-			exchange.sendResponseHeaders(204, -1);
-			exchange.close();
 			return;
 		}
 		
@@ -43,10 +34,8 @@ public class CourseHandler implements HttpHandler
 			
 		if (method.equals("POST"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
 			if (request.getID() == null)
@@ -110,10 +99,8 @@ public class CourseHandler implements HttpHandler
 		}	
 		else if (method.equals("PUT"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
 			if (request.getID() == null || request.getCourseName() == null || request.getCourseName().isBlank() || request.getGrade() == null)
@@ -168,10 +155,8 @@ public class CourseHandler implements HttpHandler
 		}
 		else if (method.equals("DELETE"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
 			
 			if (request.getID() == null)
@@ -246,31 +231,6 @@ public class CourseHandler implements HttpHandler
 			statusCode = 405;
 		}
 		
-		sendJsonResponse(exchange, statusCode, response);
-	}
-	
-	private String readRequestBody(HttpExchange exchange) throws IOException
-	{
-		try (InputStream input = exchange.getRequestBody())
-		{	
-			byte[] requestBytes = input.readAllBytes();
-			
-			return new String(requestBytes, StandardCharsets.UTF_8);
-		}
-	}
-	
-	private void sendJsonResponse(HttpExchange exchange, int statusCode, String response) throws IOException
-	{
-		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
-		
-		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-
-		exchange.sendResponseHeaders(statusCode, responseBytes.length);
-		
-		try (OutputStream output = exchange.getResponseBody())
-		{
-			output.write(responseBytes);
-		}
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
 	}
 }

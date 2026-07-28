@@ -1,13 +1,9 @@
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.InputStream;
-
-import java.nio.charset.StandardCharsets;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,7 +13,8 @@ import java.util.List;
 
 public class StudentHandler implements HttpHandler
 {
-	private String databaseURL;
+	private final String databaseURL;
+	private final Gson gson = new Gson();
 	
 	public StudentHandler(String databaseURL)
 	{
@@ -27,16 +24,10 @@ public class StudentHandler implements HttpHandler
 	@Override
 	public void handle(HttpExchange exchange) throws IOException
 	{
-		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+		String method = HttpUtils.setupCorsAndGetMethod(exchange, "GET, POST, PUT, DELETE, OPTIONS");
 		
-		String method = exchange.getRequestMethod();
-		
-		if (method.equals("OPTIONS"))
+		if (HttpUtils.handleOptionsRequest(exchange))
 		{
-			exchange.sendResponseHeaders(204, -1);
-			exchange.close();
 			return;
 		}
 		
@@ -49,23 +40,9 @@ public class StudentHandler implements HttpHandler
 			{
 				List<Student> students = SQLiteTest.getAllStudents(conn);
 				
-				StringBuilder jsonArray = new StringBuilder("[\n");
-				
-				for (int i = 0; i < students.size(); i++)
-				{
-					jsonArray.append(students.get(i).toJSON());
-					
-					if (i < students.size() - 1)
-					{
-						jsonArray.append(",\n");
-					}
-				}
-				
-				jsonArray.append("\n]");
+				response = gson.toJson(students);
 				
 				statusCode = 200;
-				
-				response = jsonArray.toString();
 			}
 			catch (SQLException e)
 			{
@@ -80,10 +57,8 @@ public class StudentHandler implements HttpHandler
 		}	
 		else if (method.equals("POST"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
 			if (request.getFirstName() == null || request.getFirstName().isBlank() || request.getLastName() == null || request.getLastName().isBlank())
@@ -137,10 +112,8 @@ public class StudentHandler implements HttpHandler
 		}	
 		else if (method.equals("PUT"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
 			if (request.getID() == null)
@@ -205,10 +178,8 @@ public class StudentHandler implements HttpHandler
 		}
 		else if (method.equals("DELETE"))
 		{
-			String requestBody = readRequestBody(exchange);
+			String requestBody = HttpUtils.readRequestBody(exchange);
 			
-			Gson gson = new Gson();
-
 			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
 			
 			if (request.getID() == null)
@@ -272,31 +243,6 @@ public class StudentHandler implements HttpHandler
 			statusCode = 405;
 		}
 		
-		sendJsonResponse(exchange, statusCode, response);
-	}
-	
-	private String readRequestBody(HttpExchange exchange) throws IOException
-	{
-		try (InputStream input = exchange.getRequestBody())
-		{	
-			byte[] requestBytes = input.readAllBytes();
-			
-			return new String(requestBytes, StandardCharsets.UTF_8);
-		}
-	}
-	
-	private void sendJsonResponse(HttpExchange exchange, int statusCode, String response) throws IOException
-	{
-		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
-		
-		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-
-		exchange.sendResponseHeaders(statusCode, responseBytes.length);
-		
-		try (OutputStream output = exchange.getResponseBody())
-		{
-			output.write(responseBytes);
-		}
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
 	}
 }
