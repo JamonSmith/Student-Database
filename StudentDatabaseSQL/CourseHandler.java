@@ -78,9 +78,9 @@ public class CourseHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean added = SQLiteTest.addCourseToStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
+				DatabaseResult result = SQLiteTest.addCourseToStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
 				
-				if (added)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 							{
@@ -89,6 +89,16 @@ public class CourseHandler implements HttpHandler
 							""";
 							
 					statusCode = 200;
+				}
+				else if (result == DatabaseResult.NOT_FOUND)
+				{
+					response = """
+							{
+								"error": "Student could not be found"
+							}
+							""";
+							
+					statusCode = 404;
 				}
 				else
 				{
@@ -137,9 +147,9 @@ public class CourseHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean updated = SQLiteTest.updateCourseGradeForStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
+				DatabaseResult result = SQLiteTest.updateCourseGradeForStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
 				
-				if (updated)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 								{
@@ -149,7 +159,7 @@ public class CourseHandler implements HttpHandler
 							
 					statusCode = 200;
 				}	
-				else
+				else if (result == DatabaseResult.NOT_FOUND)
 				{
 					response = """
 								{
@@ -158,6 +168,16 @@ public class CourseHandler implements HttpHandler
 								""";
 					
 					statusCode = 404;
+				}
+				else
+				{
+					response = """
+								{
+									"error": "Grade could not be updated"
+								}
+								""";
+					
+					statusCode = 500;
 				}
 				
 			}
@@ -207,9 +227,9 @@ public class CourseHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean deleted = SQLiteTest.removeCourseFromStudent(conn, request.getID(), request.getCourseName());
+				DatabaseResult result = SQLiteTest.removeCourseFromStudent(conn, request.getID(), request.getCourseName());
 				
-				if (deleted)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 							{
@@ -219,6 +239,16 @@ public class CourseHandler implements HttpHandler
 							
 					statusCode = 200;
 				}	
+				else if (result == DatabaseResult.NOT_FOUND)
+				{
+					response = """
+							{
+								"error": "Course not found"
+							}
+							""";
+							
+					statusCode = 404;
+				}
 				else
 				{
 					response = """
@@ -227,9 +257,8 @@ public class CourseHandler implements HttpHandler
 							}
 							""";
 							
-					statusCode = 404;
+					statusCode = 500;
 				}
-				
 			}
 			catch (SQLException e)
 			{

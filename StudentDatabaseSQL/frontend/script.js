@@ -568,14 +568,6 @@ async function renameStudentRow()
 		return;
 	}
 	
-	let ind = findStudentIndexByID(id);
-	
-	if (ind < 0)
-	{
-		inputStudentMessage("error", "Student not found", studentIDBoxSM, 2000);
-		return;
-	}
-	
 	try
 	{
 		let response = await fetch("http://localhost:8000/students", 
@@ -630,17 +622,19 @@ async function removeStudentRow()
 	if (ind < 0)
 	{
 		inputStudentMessage("error", "Student not found", studentIDBoxSM, 2000);
-		return;
 	}
 	
-	let student = students[ind];
-	
-	let confirmed = confirm("Are you sure you want to remove: " + student.id + " " + student.getFullName() + "?");
-	
-	if (!confirmed)
+	if (ind > -1)
 	{
-		inputStudentMessage("error", "Student removal canceled", studentIDBoxSM, 2000);
-		return;
+		let student = students[ind];
+		
+		let confirmed = confirm("Are you sure you want to remove: " + student.id + " " + student.getFullName() + "?");
+	
+		if (!confirmed)
+		{
+			inputStudentMessage("error", "Student removal canceled", studentIDBoxSM, 2000);
+			return;
+		}
 	}
 	
 	try
@@ -676,8 +670,8 @@ async function removeStudentRow()
 	}
 	catch (error)
 	{
-		console.error("Error occured: ", error);
-		inputStudentMessage("error", error.message, firstBox, 2000);	
+		//console.error("Error occurred: ", error);
+		inputStudentMessage("error", error.message, studentIDBoxSM, 2000);	
 	}
 }
 

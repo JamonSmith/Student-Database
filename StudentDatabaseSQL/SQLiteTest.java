@@ -134,17 +134,15 @@ public class SQLiteTest
 		}	
 	}
 		
-	public static boolean addStudent(Connection conn, String first, String last)
+	public static DatabaseResult addStudent(Connection conn, String first, String last)
 	{
-		try
-		{
-			String query = """
-							INSERT INTO students (first_name, last_name)
-							VALUES (?, ?);
-							""";
-							
-			PreparedStatement ps = conn.prepareStatement(query);
+		String query = """
+						INSERT INTO students (first_name, last_name)
+						VALUES (?, ?);
+						""";
 			
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			ps.setString(1, first.trim());
 			ps.setString(2, last.trim());
 			
@@ -152,37 +150,35 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				return true;
+				return DatabaseResult.SUCCESS;
 			}
 			else
 			{
-				return false;
+				return DatabaseResult.ERROR;
 			}
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}
 	}
 	
 	public static DatabaseResult renameStudent(Connection conn, int id, String first, String last)
 	{
-		try 
+		if (!studentExists(conn, id))
 		{
-			if (!studentExists(conn, id))
-			{
-				return DatabaseResult.NOT_FOUND;
-			}
-			
-			String query = """
-							UPDATE students
-							SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name) 
-							WHERE student_id = ?;
-							""";				
+			return DatabaseResult.NOT_FOUND;
+		}
+		
+		String query = """
+						UPDATE students
+						SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name) 
+						WHERE student_id = ?;
+						""";				
 							
-			PreparedStatement ps = conn.prepareStatement(query);
-			
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{	
 			if (first == null || first.isBlank())
 			{
 				ps.setNull(1, java.sql.Types.VARCHAR);
@@ -239,18 +235,16 @@ public class SQLiteTest
 		}
 	}
 	
-	public static boolean addCourseToStudent(Connection conn, int id, String course, Double grade)
+	public static DatabaseResult addCourseToStudent(Connection conn, int id, String course, Double grade)
 	{
-		try
-		{
 			if (!studentExists(conn, id))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			if (courseExistsForStudent(conn, id, course))
 			{
-				return false;
+				return DatabaseResult.ERROR;
 			}
 			
 			String query = """
@@ -258,8 +252,8 @@ public class SQLiteTest
 							VALUES (?, ?, ?);
 							""";
 							
-			PreparedStatement ps = conn.prepareStatement(query);
-			
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			ps.setInt(1, id);
 			ps.setString(2, course);
 			
@@ -273,27 +267,25 @@ public class SQLiteTest
 			}
 			
 			ps.executeUpdate();
-			return true;
+			return DatabaseResult.SUCCESS;
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}
 	}
 	
-	public static boolean updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade)
+	public static DatabaseResult updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade)
 	{
-		try
-		{
 			if (!studentExists(conn, id))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			String query = """
@@ -303,34 +295,32 @@ public class SQLiteTest
 							AND course_name = ?;
 							""";
 							
-			PreparedStatement ps = conn.prepareStatement(query);
-	
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			ps.setDouble(1, newGrade);
 			ps.setInt(2, id);
 			ps.setString(3, course);
 			
 			ps.executeUpdate();
-			return true;
+			return DatabaseResult.SUCCESS;
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}
 	}
 	
-	public static boolean removeCourseFromStudent(Connection conn, int id, String course)
+	public static DatabaseResult removeCourseFromStudent(Connection conn, int id, String course)
 	{
-		try
-		{
 			if (!studentExists(conn, id))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			if (!courseExistsForStudent(conn, id, course))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			String query = """
@@ -339,37 +329,35 @@ public class SQLiteTest
 							AND course_name = ?;
 							""";
 							
-			PreparedStatement ps = conn.prepareStatement(query);
-			
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			ps.setInt(1, id);
 			ps.setString(2, course);
 			
 			ps.executeUpdate();
-			return true;
+			return DatabaseResult.SUCCESS;
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}
 	}
 	
-	public static boolean removeStudent(Connection conn, int id)
+	public static DatabaseResult removeStudent(Connection conn, int id)
 	{
-		try
-		{		
-			if (!studentExists(conn, id))
-			{
-				return false;
-			}
-			
-			String query = """
-							DELETE FROM grades
-							WHERE student_id = ?;
-							""";
+		if (!studentExists(conn, id))
+		{
+			return DatabaseResult.NOT_FOUND;
+		}
+		
+		String query = """
+						DELETE FROM grades
+						WHERE student_id = ?;
+						""";
 							
-			PreparedStatement ps = conn.prepareStatement(query);
-				
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{		
 			ps.setInt(1, id);
 	
 			ps.executeUpdate();
@@ -387,17 +375,17 @@ public class SQLiteTest
 			
 			if (rows == 1)
 			{
-				return true;
+				return DatabaseResult.SUCCESS;
 			}
 			else
 			{
-				return false;
+				return DatabaseResult.ERROR;
 			}
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}	
 	}
 	

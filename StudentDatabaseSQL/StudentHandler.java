@@ -101,9 +101,9 @@ public class StudentHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean added = SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
+				DatabaseResult result = SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
 				
-				if (added)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 							{
@@ -170,9 +170,9 @@ public class StudentHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
+				DatabaseResult result = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
 				
-				if (renamed)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 							{
@@ -182,6 +182,16 @@ public class StudentHandler implements HttpHandler
 					
 					statusCode = 200;
 				}	
+				else if (result == DatabaseResult.NOT_FOUND)
+				{
+					response = """
+							{
+								"error": "Student not found"
+							}
+							""";
+							
+					statusCode = 404;
+				}
 				else
 				{
 					response = """
@@ -190,7 +200,7 @@ public class StudentHandler implements HttpHandler
 							}
 							""";
 							
-					statusCode = 404;
+					statusCode = 500;
 				}
 				
 			}
@@ -198,7 +208,7 @@ public class StudentHandler implements HttpHandler
 			{
 				response = """
 						{
-							"error": "Could not rename student"
+							"error": "Student could not be renamed"
 						}
 						""";
 	
@@ -230,9 +240,9 @@ public class StudentHandler implements HttpHandler
 		{
 			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
+				DatabaseResult result = SQLiteTest.removeStudent(conn, request.getID());
 				
-				if (deleted)
+				if (result == DatabaseResult.SUCCESS)
 				{
 					response = """
 							{
@@ -242,6 +252,16 @@ public class StudentHandler implements HttpHandler
 							
 					statusCode = 200;
 				}	
+				else if (result == DatabaseResult.NOT_FOUND)
+				{
+					response = """
+							{
+								"error": "Student could not be found"
+							}
+							""";
+							
+					statusCode = 404;
+				}	
 				else
 				{
 					response = """
@@ -250,7 +270,7 @@ public class StudentHandler implements HttpHandler
 							}
 							""";
 							
-					statusCode = 404;
+					statusCode = 500;
 				}
 				
 			}
