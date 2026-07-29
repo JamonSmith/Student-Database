@@ -31,74 +31,89 @@ public class StudentHandler implements HttpHandler
 			return;
 		}
 		
-		String response;
-		int statusCode = 500;
-			
 		if (method.equals("GET"))
 		{
-			try (Connection conn = DriverManager.getConnection(databaseURL))
-			{
-				List<Student> students = SQLiteTest.getAllStudents(conn);
-				
-				response = gson.toJson(students);
-				
-				statusCode = 200;
-			}
-			catch (SQLException e)
-			{
-				response = """
-							{
-								"error": "Could not retrieve data"
-							}
-							""";
-							
-				statusCode = 500;
-			}
+			handleGet(exchange);
 		}	
 		else if (method.equals("POST"))
 		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
+			handlePost(exchange);
+		}	
+		else if (method.equals("PUT"))
+		{
+			handlePut(exchange);
+		}
+		else if (method.equals("DELETE"))
+		{
+			handleDelete(exchange);
+		}
+		else		
+		{
+			handleInvalidMethod(exchange);
+		}
+	}
+	
+	private void handleGet(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		try (Connection conn = DriverManager.getConnection(databaseURL))
+		{
+			List<Student> students = SQLiteTest.getAllStudents(conn);
 			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
+			response = gson.toJson(students);
 			
-			if (request.getFirstName() == null || request.getFirstName().isBlank() || request.getLastName() == null || request.getLastName().isBlank())
+			statusCode = 200;
+		}
+		catch (SQLException e)
+		{
+			response = """
+					{
+						"error": "Could not retrieve data"
+					}
+					""";
+						
+			statusCode = 500;
+		}
+			
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handlePost(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		StudentRequest request = readStudentRequest(exchange);
+		
+		if (request.getFirstName() == null || request.getFirstName().isBlank() || request.getLastName() == null || request.getLastName().isBlank())
+		{
+			response = """
+						{
+							"error": "First name and last name must be provided"
+						}
+						""";
+			
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				response = """
+				boolean added = SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
+				
+				if (added)
+				{
+					response = """
 							{
-								"error": "First name and last name must be provided"
+								"message": "Student successfully added"
 							}
 							""";
-				
-				statusCode = 400;
-			}
-			else
-			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
-				{
-					boolean added = SQLiteTest.addStudent(conn, request.getFirstName(), request.getLastName());
 					
-					if (added)
-					{
-						response = """
-								{
-									"message": "Student successfully added"
-								}
-								""";
-						
-						statusCode = 200;
-					}
-					else
-					{
-						response = """
-									{
-										"error": "Could not add student"
-									}
-									""";
-	
-						statusCode = 500;
-					}
+					statusCode = 200;
 				}
-				catch (SQLException e)
+				else
 				{
 					response = """
 								{
@@ -109,140 +124,168 @@ public class StudentHandler implements HttpHandler
 					statusCode = 500;
 				}
 			}
-		}	
-		else if (method.equals("PUT"))
-		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
-			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
-			
-			if (request.getID() == null)
+			catch (SQLException e)
 			{
 				response = """
-						{
-							"error": "Must provide ID number"
-						}
-						""";
-	
-				statusCode = 400;
-			}
-			else if ((request.getFirstName() == null || request.getFirstName().isBlank()) && (request.getLastName() == null || request.getLastName().isBlank()))
-			{
-				response = """
-						{
-							"error": "Must provide first name or last name"
-						}
-						""";
-	
-				statusCode = 400;
-			}
-			else
-			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
-				{
-					boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
-					
-					if (renamed)
-					{
-						response = """
-								{
-									"message": "Student successfully renamed"
-								}
-								""";
-						
-						statusCode = 200;
-					}	
-					else
-					{
-						response = """
-								{
-									"error": "Student could not be renamed"
-								}
-								""";
-								
-						statusCode = 404;
-					}
-					
-				}
-				catch (SQLException e)
-				{
-					response = """
 							{
-								"error": "Could not rename student"
+								"error": "Could not add student"
 							}
 							""";
 	
-					statusCode = 500;
-				}
+				statusCode = 500;
 			}
 		}
-		else if (method.equals("DELETE"))
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handlePut(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		StudentRequest request = readStudentRequest(exchange);
+		
+		if (request.getID() == null)
 		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
-			
-			StudentRequest request = gson.fromJson(requestBody, StudentRequest.class);
-			
-			if (request.getID() == null)
+			response = """
+					{
+						"error": "Must provide ID number"
+					}
+					""";
+	
+			statusCode = 400;
+		}
+		else if ((request.getFirstName() == null || request.getFirstName().isBlank()) && (request.getLastName() == null || request.getLastName().isBlank()))
+		{
+			response = """
+					{
+						"error": "Must provide first name or last name"
+					}
+					""";
+	
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
+			{
+				boolean renamed = SQLiteTest.renameStudent(conn, request.getID(), request.getFirstName(), request.getLastName());
+				
+				if (renamed)
+				{
+					response = """
+							{
+								"message": "Student successfully renamed"
+							}
+							""";
+					
+					statusCode = 200;
+				}	
+				else
+				{
+					response = """
+							{
+								"error": "Student could not be renamed"
+							}
+							""";
+							
+					statusCode = 404;
+				}
+				
+			}
+			catch (SQLException e)
 			{
 				response = """
 						{
-							"error": "Must provide ID number"
+							"error": "Could not rename student"
 						}
 						""";
-						
-				statusCode = 400;
-			}
-			else
-			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
-				{
-					boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
-					
-					if (deleted)
-					{
-						response = """
-								{
-									"message": "Student successfully deleted"
-								}
-								""";
-								
-						statusCode = 200;
-					}	
-					else
-					{
-						response = """
-								{
-									"error": "Could not delete student"
-								}
-								""";
-								
-						statusCode = 404;
-					}
-					
-				}
-				catch (SQLException e)
-				{
-					response = """
-								{
-									"error": "Could not delete student"
-								}
-								""";
-								
-					statusCode = 500;
-				}
+	
+				statusCode = 500;
 			}
 		}
-		else		
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handleDelete(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		StudentRequest request = readStudentRequest(exchange);
+		
+		if (request.getID() == null)
 		{
 			response = """
+					{
+						"error": "Must provide ID number"
+					}
+					""";
+					
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
+			{
+				boolean deleted = SQLiteTest.removeStudent(conn, request.getID());
+				
+				if (deleted)
+				{
+					response = """
+							{
+								"message": "Student successfully deleted"
+							}
+							""";
+							
+					statusCode = 200;
+				}	
+				else
+				{
+					response = """
+							{
+								"error": "Could not delete student"
+							}
+							""";
+							
+					statusCode = 404;
+				}
+				
+			}
+			catch (SQLException e)
+			{
+				response = """
+						{
+							"error": "Could not delete student"
+						}
+						""";
+							
+				statusCode = 500;
+			}
+		}
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handleInvalidMethod(HttpExchange exchange) throws IOException
+	{
+		String response = """
 						{
 							"error": "Method not allowed"
 						}
 						""";
 						
-			statusCode = 405;
-		}
-		
+		int statusCode = 405;
+			
 		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private StudentRequest readStudentRequest(HttpExchange exchange) throws IOException
+	{
+		String requestBody = HttpUtils.readRequestBody(exchange);
+			
+		return gson.fromJson(requestBody, StudentRequest.class);
 	}
 }

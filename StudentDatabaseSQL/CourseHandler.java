@@ -29,208 +29,240 @@ public class CourseHandler implements HttpHandler
 			return;
 		}
 		
-		String response;
-		int statusCode = 500;
-			
 		if (method.equals("POST"))
 		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
-			
-			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
-			
-			if (request.getID() == null)
-			{
-				response = """
-						{
-							"error": "Must provide ID number"
-						}
-						""";
-						
-				statusCode = 400;
-			}
-			else if (request.getCourseName() == null || request.getCourseName().isBlank())
-			{
-				response = """
-						{
-							"error": "Must provide course name"
-						}
-						""";
-	
-				statusCode = 400;
-			}
-			else
-			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
-				{
-					boolean added = SQLiteTest.addCourseToStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
-					
-					if (added)
-					{
-						response = """
-								{
-									"message": "Course successfully added"
-								}
-								""";
-								
-						statusCode = 200;
-					}
-					else
-					{
-						response = """
-								{
-									"error": "Could not add course"
-								}
-								""";
-								
-						statusCode = 500;
-					}
-				}
-				catch (SQLException e)
-				{
-					response = """
-								{
-									"error": "Could not add course"
-								}
-								""";
-								
-					statusCode = 500;
-				}
-			}
+			handlePost(exchange);
 		}	
 		else if (method.equals("PUT"))
 		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
-			
-			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
-			
-			if (request.getID() == null || request.getCourseName() == null || request.getCourseName().isBlank() || request.getGrade() == null)
+			handlePut(exchange);
+		}
+		else if (method.equals("DELETE"))
+		{
+			handleDelete(exchange);
+		}
+		else		
+		{
+			handleInvalidMethod(exchange);
+		}
+	}
+	
+	private void handlePost(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		CourseRequest request = readCourseRequest(exchange);
+		
+		if (request.getID() == null)
+		{
+			response = """
+					{
+						"error": "Must provide ID number"
+					}
+					""";
+					
+			statusCode = 400;
+		}
+		else if (request.getCourseName() == null || request.getCourseName().isBlank())
+		{
+			response = """
+					{
+						"error": "Must provide course name"
+					}
+					""";
+	
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
+			{
+				boolean added = SQLiteTest.addCourseToStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
+				
+				if (added)
+				{
+					response = """
+							{
+								"message": "Course successfully added"
+							}
+							""";
+							
+					statusCode = 200;
+				}
+				else
+				{
+					response = """
+							{
+								"error": "Could not add course"
+							}
+							""";
+							
+					statusCode = 500;
+				}
+			}
+			catch (SQLException e)
 			{
 				response = """
 							{
-								"error": "All fields must be provided"
+								"error": "Could not add course"
 							}
 							""";
-				
-				statusCode = 400;
+							
+				statusCode = 500;
 			}
-			else
+		}
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handlePut(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		CourseRequest request = readCourseRequest(exchange);
+		
+		if (request.getID() == null || request.getCourseName() == null || request.getCourseName().isBlank() || request.getGrade() == null)
+		{
+			response = """
+						{
+							"error": "All fields must be provided"
+						}
+						""";
+			
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
 			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
+				boolean updated = SQLiteTest.updateCourseGradeForStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
+				
+				if (updated)
 				{
-					boolean updated = SQLiteTest.updateCourseGradeForStudent(conn, request.getID(), request.getCourseName(), request.getGrade());
-					
-					if (updated)
-					{
-						response = """
-									{
-										"message": "Course grade successfully updated"
-									}
-									""";
-								
-						statusCode = 200;
-					}	
-					else
-					{
-						response = """
-									{
-										"error": "Grade could not be updated"
-									}
-									""";
-						
-						statusCode = 404;
-					}
-					
-				}
-				catch (SQLException e)
+					response = """
+								{
+									"message": "Course grade successfully updated"
+								}
+								""";
+							
+					statusCode = 200;
+				}	
+				else
 				{
 					response = """
 								{
 									"error": "Grade could not be updated"
 								}
 								""";
-								
-					statusCode = 500;
+					
+					statusCode = 404;
 				}
-			}	
-		}
-		else if (method.equals("DELETE"))
-		{
-			String requestBody = HttpUtils.readRequestBody(exchange);
-			
-			CourseRequest request = gson.fromJson(requestBody, CourseRequest.class);
-			
-			if (request.getID() == null)
+				
+			}
+			catch (SQLException e)
 			{
 				response = """
-						{
-							"error": "Must provide ID number"
-						}
-						""";
-						
-				statusCode = 400;
+							{
+								"error": "Grade could not be updated"
+							}
+							""";
+							
+				statusCode = 500;
 			}
-			else if (request.getCourseName() == null || request.getCourseName().isBlank())
-			{
-				response = """
-						{
-							"error": "Must provide course name"
-						}
-						""";
-						
-				statusCode = 400;
-			}
-			else
-			{
-				try (Connection conn = DriverManager.getConnection(databaseURL))
-				{
-					boolean deleted = SQLiteTest.removeCourseFromStudent(conn, request.getID(), request.getCourseName());
-					
-					if (deleted)
-					{
-						response = """
-								{
-									"message": "Course successfully removed"
-								}
-								""";
-								
-						statusCode = 200;
-					}	
-					else
-					{
-						response = """
-								{
-									"error": "Could not remove course"
-								}
-								""";
-								
-						statusCode = 404;
-					}
-					
-				}
-				catch (SQLException e)
-				{
-					response = """
-								{
-									"error": "Could not remove course"
-								}
-								""";
-								
-					statusCode = 500;
-				}
-			}
-			
-		}
-		else		
+		}	
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handleDelete(HttpExchange exchange) throws IOException
+	{
+		String response;
+		int statusCode = 500;
+		
+		CourseRequest request = readCourseRequest(exchange);
+		
+		if (request.getID() == null)
 		{
 			response = """
+					{
+						"error": "Must provide ID number"
+					}
+					""";
+					
+			statusCode = 400;
+		}
+		else if (request.getCourseName() == null || request.getCourseName().isBlank())
+		{
+			response = """
+					{
+						"error": "Must provide course name"
+					}
+					""";
+					
+			statusCode = 400;
+		}
+		else
+		{
+			try (Connection conn = DriverManager.getConnection(databaseURL))
+			{
+				boolean deleted = SQLiteTest.removeCourseFromStudent(conn, request.getID(), request.getCourseName());
+				
+				if (deleted)
+				{
+					response = """
+							{
+								"message": "Course successfully removed"
+							}
+							""";
+							
+					statusCode = 200;
+				}	
+				else
+				{
+					response = """
+							{
+								"error": "Could not remove course"
+							}
+							""";
+							
+					statusCode = 404;
+				}
+				
+			}
+			catch (SQLException e)
+			{
+				response = """
+							{
+								"error": "Could not remove course"
+							}
+							""";
+							
+				statusCode = 500;
+			}
+		}
+		
+		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private void handleInvalidMethod(HttpExchange exchange) throws IOException
+	{
+		String response = """
 						{
 							"error": "Method not allowed"
 						}
 						""";
 						
-			statusCode = 405;
-		}
+		int statusCode = 405;
 		
 		HttpUtils.sendJsonResponse(exchange, statusCode, response);
+	}
+	
+	private CourseRequest readCourseRequest(HttpExchange exchange) throws IOException
+	{
+		String requestBody = HttpUtils.readRequestBody(exchange);
+			
+		return gson.fromJson(requestBody, CourseRequest.class);
 	}
 }

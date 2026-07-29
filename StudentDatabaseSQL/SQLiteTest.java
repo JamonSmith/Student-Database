@@ -166,13 +166,13 @@ public class SQLiteTest
 		}
 	}
 	
-	public static boolean renameStudent(Connection conn, int id, String first, String last)
+	public static DatabaseResult renameStudent(Connection conn, int id, String first, String last)
 	{
 		try 
 		{
 			if (!studentExists(conn, id))
 			{
-				return false;
+				return DatabaseResult.NOT_FOUND;
 			}
 			
 			String query = """
@@ -204,12 +204,12 @@ public class SQLiteTest
 			ps.setInt(3, id);
 				
 			ps.executeUpdate();			
-			return true;
+			return DatabaseResult.SUCCESS;
 		}
 		catch (SQLException e)
 		{
 			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			return DatabaseResult.ERROR;
 		}
 	}
 	
