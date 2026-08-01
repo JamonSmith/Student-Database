@@ -24,35 +24,34 @@ public class SQLiteTest
 	
 	public static void loadStudentCourses(Connection conn, Student student)
 	{
-		try	
-		{
-			String query = """
-							SELECT course_name, grade
-							FROM grades
-							WHERE student_id = ?;
-							""";
+		String query = """
+						SELECT course_name, grade
+						FROM grades
+						WHERE student_id = ?;
+						""";
 			
-			PreparedStatement ps = conn.prepareStatement(query);
-			
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{	
 			ps.setInt(1, student.getID());
 			
-			ResultSet rs = ps.executeQuery();
-			
-			while (rs.next())
+			try (ResultSet rs = ps.executeQuery())
 			{
-				String course = rs.getString("course_name");
-				double gradeVal = rs.getDouble("grade");
-				
-				Double grade = null;
-				
-				if (!rs.wasNull())
+				while (rs.next())
 				{
-					grade = gradeVal;
+					String course = rs.getString("course_name");
+					double gradeVal = rs.getDouble("grade");
+					
+					Double grade = null;
+					
+					if (!rs.wasNull())
+					{
+						grade = gradeVal;
+					}
+					
+					Course c = new Course(course, grade);
+					
+					student.getCourses().add(c);
 				}
-				
-				Course c = new Course(course, grade);
-				
-				student.getCourses().add(c);
 			}
 		}
 		catch (SQLException e)
@@ -65,21 +64,17 @@ public class SQLiteTest
 	{
 		List<Student> students = new ArrayList<>();
 		
-		try 
-		{
-			String query = """
-							SELECT students.student_id, first_name, last_name, ROUND(AVG(grade), 2) AS \"average\"
-							FROM students
-							LEFT JOIN grades
-							ON students.student_id = grades.student_id
-							GROUP BY students.student_id
-							ORDER BY students.student_id ASC;
-							""";
+		String query = """
+						SELECT students.student_id, first_name, last_name, ROUND(AVG(grade), 2) AS \"average\"
+						FROM students
+						LEFT JOIN grades
+						ON students.student_id = grades.student_id
+						GROUP BY students.student_id
+						ORDER BY students.student_id ASC;
+						""";
 							
-			Statement s = conn.createStatement();
-			
-			ResultSet rs = s.executeQuery(query);
-			
+		try (Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(query))
+		{
 			while (rs.next())
 			{
 				int id = rs.getInt("student_id");
@@ -108,7 +103,7 @@ public class SQLiteTest
 		
 		return students;
 	}		
-			
+	
 	public static boolean studentExists(Connection conn, int id) throws SQLException
 	{
 		String query = """
@@ -338,37 +333,49 @@ public class SQLiteTest
 						DELETE FROM grades
 						WHERE student_id = ?;
 						""";
-						
-		try (PreparedStatement ps = conn.prepareStatement(query))
+					
+		String query2 = """
+						DELETE FROM students
+						WHERE student_id = ?;
+						""";
+					
+		try
 		{		
 			if (!studentExists(conn, id))
 			{
 				return DatabaseResult.NOT_FOUND;
 			}
-
-			ps.setInt(1, id);
-	
-			ps.executeUpdate();
 			
-			String query2 = """
-							DELETE FROM students
-							WHERE student_id = ?;
-							""";
-							
-			try (PreparedStatement ps2 = conn.prepareStatement(query2))
+			conn.setAutoCommit(false);
+
+			try (PreparedStatement ps = conn.prepareStatement(query); PreparedStatement ps2 = conn.prepareStatement(query2))
 			{
+				ps.setInt(1, id);
+	
+				ps.executeUpdate();
+				
 				ps2.setInt(1, id);
 				
 				int rows = ps2.executeUpdate();
 				
-				if (rows == 1)
+				if (rows != 1)
 				{
-					return DatabaseResult.SUCCESS;
-				}
-				else
-				{
+					conn.rollback();
 					return DatabaseResult.ERROR;
 				}
+			
+				conn.commit();
+				return DatabaseResult.SUCCESS;
+			}
+			catch (SQLException e)
+			{
+				conn.rollback();
+				System.err.println(RED + e.getMessage() + RESET + "\n");
+				return DatabaseResult.ERROR;
+			}
+			finally
+			{
+				conn.setAutoCommit(true);
 			}
 		}
 		catch (SQLException e)
