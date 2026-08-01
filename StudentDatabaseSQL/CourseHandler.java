@@ -100,6 +100,16 @@ public class CourseHandler implements HttpHandler
 							
 					statusCode = 404;
 				}
+				else if (result == DatabaseResult.EXISTS)
+				{
+					response = """
+							{
+								"error": "Student already has this course"
+							}
+							""";
+							
+					statusCode = 409;
+				}
 				else
 				{
 					response = """
@@ -163,7 +173,7 @@ public class CourseHandler implements HttpHandler
 				{
 					response = """
 								{
-									"error": "Grade could not be updated"
+									"error": "Student or course could not be found"
 								}
 								""";
 					
@@ -243,7 +253,7 @@ public class CourseHandler implements HttpHandler
 				{
 					response = """
 							{
-								"error": "Course not found"
+								"error": "Student or course not found"
 							}
 							""";
 							

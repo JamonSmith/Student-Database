@@ -109,29 +109,23 @@ public class SQLiteTest
 		return students;
 	}		
 			
-	public static boolean studentExists(Connection conn, int id)
+	public static boolean studentExists(Connection conn, int id) throws SQLException
 	{
-		try
+		String query = """
+						SELECT * 
+						FROM students
+						WHERE student_id = ?;
+						""";
+						
+		try (PreparedStatement ps = conn.prepareStatement(query))
 		{
-			String query = """
-							SELECT * 
-							FROM students
-							WHERE student_id = ?;
-							""";
-							
-			PreparedStatement ps = conn.prepareStatement(query);
-							
 			ps.setInt(1, id);
 			
-			ResultSet rs = ps.executeQuery();
-			
-			return rs.next();
+			try (ResultSet rs = ps.executeQuery())
+			{
+				return rs.next();
+			}
 		}
-		catch (SQLException e)
-		{
-			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
-		}	
 	}
 		
 	public static DatabaseResult addStudent(Connection conn, String first, String last)
@@ -166,11 +160,6 @@ public class SQLiteTest
 	
 	public static DatabaseResult renameStudent(Connection conn, int id, String first, String last)
 	{
-		if (!studentExists(conn, id))
-		{
-			return DatabaseResult.NOT_FOUND;
-		}
-		
 		String query = """
 						UPDATE students
 						SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name) 
@@ -179,6 +168,11 @@ public class SQLiteTest
 							
 		try (PreparedStatement ps = conn.prepareStatement(query))
 		{	
+			if (!studentExists(conn, id))
+			{
+				return DatabaseResult.NOT_FOUND;
+			}
+		
 			if (first == null || first.isBlank())
 			{
 				ps.setNull(1, java.sql.Types.VARCHAR);
@@ -209,34 +203,35 @@ public class SQLiteTest
 		}
 	}
 	
-	public static boolean courseExistsForStudent(Connection conn, int id, String course)
+	public static boolean courseExistsForStudent(Connection conn, int id, String course) throws SQLException
 	{
-		try 
+		String query = """
+						SELECT * 
+						FROM grades
+						WHERE student_id = ? AND course_name = ?;
+						""";
+						
+		try (PreparedStatement ps = conn.prepareStatement(query))
 		{
-			String query = """
-							SELECT * 
-							FROM grades
-							WHERE student_id = ? AND course_name = ?;
-							""";
-							
-			PreparedStatement ps = conn.prepareStatement(query);
-
 			ps.setInt(1, id);
 			ps.setString(2, course);
 			
-			ResultSet rs = ps.executeQuery();
-			
-			return rs.next();
-		}
-		catch (SQLException e)
-		{
-			System.err.println(RED + e.getMessage() + RESET + "\n");
-			return false;
+			try (ResultSet rs = ps.executeQuery())
+			{
+				return rs.next();
+			}
 		}
 	}
 	
 	public static DatabaseResult addCourseToStudent(Connection conn, int id, String course, Double grade)
 	{
+		String query = """
+						INSERT INTO grades (student_id, course_name, grade)
+						VALUES (?, ?, ?);
+						""";
+							
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			if (!studentExists(conn, id))
 			{
 				return DatabaseResult.NOT_FOUND;
@@ -244,16 +239,9 @@ public class SQLiteTest
 			
 			if (courseExistsForStudent(conn, id, course))
 			{
-				return DatabaseResult.ERROR;
+				return DatabaseResult.EXISTS;
 			}
-			
-			String query = """
-							INSERT INTO grades (student_id, course_name, grade)
-							VALUES (?, ?, ?);
-							""";
-							
-		try (PreparedStatement ps = conn.prepareStatement(query))
-		{
+		
 			ps.setInt(1, id);
 			ps.setString(2, course);
 			
@@ -278,6 +266,15 @@ public class SQLiteTest
 	
 	public static DatabaseResult updateCourseGradeForStudent(Connection conn, int id, String course, double newGrade)
 	{
+		String query = """
+						UPDATE grades
+						SET grade = ? 
+						WHERE student_id = ?
+						AND course_name = ?;
+						""";
+		
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			if (!studentExists(conn, id))
 			{
 				return DatabaseResult.NOT_FOUND;
@@ -288,15 +285,6 @@ public class SQLiteTest
 				return DatabaseResult.NOT_FOUND;
 			}
 			
-			String query = """
-							UPDATE grades
-							SET grade = ? 
-							WHERE student_id = ?
-							AND course_name = ?;
-							""";
-							
-		try (PreparedStatement ps = conn.prepareStatement(query))
-		{
 			ps.setDouble(1, newGrade);
 			ps.setInt(2, id);
 			ps.setString(3, course);
@@ -313,6 +301,14 @@ public class SQLiteTest
 	
 	public static DatabaseResult removeCourseFromStudent(Connection conn, int id, String course)
 	{
+		String query = """
+						DELETE FROM grades 
+						WHERE student_id = ?
+						AND course_name = ?;
+						""";
+							
+		try (PreparedStatement ps = conn.prepareStatement(query))
+		{
 			if (!studentExists(conn, id))
 			{
 				return DatabaseResult.NOT_FOUND;
@@ -322,15 +318,7 @@ public class SQLiteTest
 			{
 				return DatabaseResult.NOT_FOUND;
 			}
-			
-			String query = """
-							DELETE FROM grades 
-							WHERE student_id = ?
-							AND course_name = ?;
-							""";
-							
-		try (PreparedStatement ps = conn.prepareStatement(query))
-		{
+		
 			ps.setInt(1, id);
 			ps.setString(2, course);
 			
@@ -346,18 +334,18 @@ public class SQLiteTest
 	
 	public static DatabaseResult removeStudent(Connection conn, int id)
 	{
-		if (!studentExists(conn, id))
-		{
-			return DatabaseResult.NOT_FOUND;
-		}
-		
 		String query = """
 						DELETE FROM grades
 						WHERE student_id = ?;
 						""";
-							
+						
 		try (PreparedStatement ps = conn.prepareStatement(query))
 		{		
+			if (!studentExists(conn, id))
+			{
+				return DatabaseResult.NOT_FOUND;
+			}
+
 			ps.setInt(1, id);
 	
 			ps.executeUpdate();
@@ -367,19 +355,20 @@ public class SQLiteTest
 							WHERE student_id = ?;
 							""";
 							
-			PreparedStatement ps2 = conn.prepareStatement(query2);
-			
-			ps2.setInt(1, id);
-			
-			int rows = ps2.executeUpdate();
-			
-			if (rows == 1)
+			try (PreparedStatement ps2 = conn.prepareStatement(query2))
 			{
-				return DatabaseResult.SUCCESS;
-			}
-			else
-			{
-				return DatabaseResult.ERROR;
+				ps2.setInt(1, id);
+				
+				int rows = ps2.executeUpdate();
+				
+				if (rows == 1)
+				{
+					return DatabaseResult.SUCCESS;
+				}
+				else
+				{
+					return DatabaseResult.ERROR;
+				}
 			}
 		}
 		catch (SQLException e)

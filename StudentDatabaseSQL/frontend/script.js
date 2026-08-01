@@ -619,11 +619,6 @@ async function removeStudentRow()
 	
 	let ind = findStudentIndexByID(id);
 	
-	if (ind < 0)
-	{
-		inputStudentMessage("error", "Student not found", studentIDBoxSM, 2000);
-	}
-	
 	if (ind > -1)
 	{
 		let student = students[ind];
@@ -670,7 +665,7 @@ async function removeStudentRow()
 	}
 	catch (error)
 	{
-		//console.error("Error occurred: ", error);
+		console.error("Error occurred: ", error);
 		inputStudentMessage("error", error.message, studentIDBoxSM, 2000);	
 	}
 }
@@ -690,14 +685,6 @@ async function addCourseToStudent()
 	if (name === "")
 	{
 		inputCourseMessage("error", "Please provide a course name", courseBox, 2000);
-		return;
-	}
-	
-	let ind = findStudentIndexByID(id);
-	
-	if (ind < 0)
-	{
-		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
 		return;
 	}
 	
@@ -765,15 +752,13 @@ async function addCourseToStudent()
 		
 		inputCourseMessage("success", "Course added!", studentIDBoxCM, 2000);	
 		
-		studentIDBoxCM.value = "";
-		courseBox.value = "";
-		gradeBox.value = "";
+		clearCourseForm();
 		
 		courseButtonStates();
 	}
 	catch (error)
 	{
-		console.error("Error occured: ", error);
+		console.log("Error occured: ", error);
 		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
 	}
 }
@@ -810,14 +795,6 @@ async function updateCourseGradeForStudent()
 		return;
 	}
 	
-	let ind = findStudentIndexByID(id);
-	
-	if (ind < 0)
-	{
-		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
-		return;
-	}
-	
 	try
 	{
 		let response = await fetch("http://localhost:8000/courses", 	
@@ -848,15 +825,13 @@ async function updateCourseGradeForStudent()
 		
 		inputCourseMessage("success", "Course grade updated!", studentIDBoxCM, 2000);	
 		
-		studentIDBoxCM.value = "";
-		courseBox.value = "";
-		gradeBox.value = "";
+		clearCourseForm();
 		
 		courseButtonStates();
 	}
 	catch (error)
 	{
-		console.error("Error occured: ", error);
+		console.log("Error occured: ", error);
 		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
 	}
 }
@@ -875,14 +850,6 @@ async function removeCourseFromStudent()
 	if (course === "")
 	{
 		inputCourseMessage("error", "Please provide a course name", courseBox, 2000);
-		return;
-	}
-	
-	let ind = findStudentIndexByID(id);
-	
-	if (ind < 0)
-	{
-		inputCourseMessage("error", "Student not found", studentIDBoxCM, 2000);
 		return;
 	}
 	
@@ -915,14 +882,13 @@ async function removeCourseFromStudent()
 		
 		inputCourseMessage("success", "Course removed!", studentIDBoxCM, 2000);	
 		
-		studentIDBoxCM.value = "";
-		courseBox.value = "";
+		clearCourseForm();
 		
 		courseButtonStates();
 	}
 	catch (error)
 	{
-		console.error("Error occured: ", error);
+		console.log("Error occured: ", error);
 		inputCourseMessage("error", error.message, studentIDBoxCM, 2000);	
 	}
 }
@@ -1030,9 +996,6 @@ function sortStudents(col)
 	});
 	
 	refreshRecordsView();
-	
-	console.log(currSortCol);
-	console.log(asc);
 }
 
 function showOneStudent()
