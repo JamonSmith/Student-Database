@@ -5,6 +5,11 @@ let clearStudentsButton = document.getElementById("clearStudentsButton");
 let studentTable = document.getElementById("studentTable");
 let studentCount = document.getElementById("studentCount");
 
+let idHeader = document.getElementById("idHeader");
+let firstHeader = document.getElementById("firstHeader");
+let lastHeader = document.getElementById("lastHeader");
+let avgHeader = document.getElementById("avgHeader");
+
 
 // Classes
 
@@ -271,6 +276,111 @@ function renderAllStudents()
 	updateStudentCount();
 }
 
+function sortStudents(col)
+{
+	if (currSortCol === col)
+	{
+		asc = !asc;
+	}
+	else 
+	{
+		currSortCol = col;
+		asc = true;
+	}
+	
+	students.sort(function(a, b) 
+	{ 
+		if(col === IDCOL)
+		{
+			let numA = a.id;
+			let numB = b.id;
+			
+			if (Number.isNaN(numA) && Number.isNaN(numB))
+			{
+				return 0;
+			}
+			
+			if (Number.isNaN(numA))
+			{
+				return 1;
+			}
+			
+			if (Number.isNaN(numB))
+			{
+				return -1;
+			}
+			
+			if (asc)
+			{
+				return numA - numB;
+			}
+			else
+			{
+				return numB - numA;
+			}
+		}
+		else if (col === FIRSTNAMECOL)
+		{
+			let valA = a.firstName;
+			let valB = b.firstName;
+			
+			if (asc)
+			{
+				return valA.localeCompare(valB); 
+			}
+			else
+			{
+				return valB.localeCompare(valA); 
+			}
+		}
+		else if (col === LASTNAMECOL)
+		{
+			let valA = a.lastName;
+			let valB = b.lastName;
+			
+			if (asc)
+			{
+				return valA.localeCompare(valB); 
+			}
+			else
+			{
+				return valB.localeCompare(valA); 
+			}
+		}
+		else
+		{
+			let numA = parseFloat(a.average);
+			let numB = parseFloat(b.average);
+			
+			if (Number.isNaN(numA) && Number.isNaN(numB))
+			{
+				return 0;
+			}
+			
+			if (Number.isNaN(numA))
+			{
+				return 1;
+			}
+			
+			if (Number.isNaN(numB))
+			{
+				return -1;
+			}
+			
+			if (asc)
+			{
+				return numA - numB;
+			}
+			else
+			{
+				return numB - numA;
+			}
+		}
+	});
+	
+	refreshRecordsView();
+}
+
 
 // Feature Functions
 
@@ -303,3 +413,8 @@ allStudentsButton.addEventListener("mouseout", (event) => {event.target.style.ba
 clearStudentsButton.addEventListener("click", clearStudentTable);
 clearStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});
 clearStudentsButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#0000ff";});
+
+idHeader.addEventListener("click", function() { sortStudents(IDCOL); });
+firstHeader.addEventListener("click", function() { sortStudents(FIRSTNAMECOL); });
+lastHeader.addEventListener("click", function() { sortStudents(LASTNAMECOL); });
+avgHeader.addEventListener("click", function() { sortStudents(AVGCOL); });
