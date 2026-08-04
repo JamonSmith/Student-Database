@@ -7,18 +7,39 @@
 		<title> Add Student </title>
 		
 		<link rel="stylesheet" href="style.css">
+		
+		<script src="add-student.js" defer></script>
 	
 	</head>
 	
-	<a href="index2.html">
-		
-			<button type="button" id="asBackButton"> Home </button>
-			
-	</a>	
-	
 	<body>
 	
+		<a href="index2.html">
+			
+			<button type="button" id="asBackButton"> Home </button>
+				
+		</a>	
+	
 		<h1> Add Student </h1>
+		
+		<label for="asFirstName"> First Name </label>
+		<br>
+		
+		<input id="asFirstName" type="text" placeholder="Enter First Name" required>
+		<br>
+		<br>
+		
+		<label for="asLastName"> Last Name </label>
+		<br>
+		
+		<input id="asLastName" type="text" placeholder="Enter Last Name" required>
+		<br>
+		<br>
+		
+		<button type="button" id="addStudentButton" class="student-button"> Add Student </button>
+		
+		<p id="addStudentMessage">  </p>
+		<br>
 	
 	</body>
 

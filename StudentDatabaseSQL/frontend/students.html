@@ -7,18 +7,57 @@
 		<title> Student Records </title>
 		
 		<link rel="stylesheet" href="style.css">
+		
+		<script src="students.js" defer></script>
 	
 	</head>
 	
-	<a href="index2.html">
-		
-			<button type="button" id="srBackButton"> Home </button>
-			
-	</a>	
-	
 	<body>
 	
+		<a href="index2.html">
+			
+			<button type="button" id="srBackButton"> Home </button>
+				
+		</a>	
+	
 		<h1> Student Records </h1>
+		
+		<button type="button" id="viewStudentsButton" class="records-button"> Display All Students </button>
+		
+		<button type="button" id="clearStudentsButton" class="records-button"> Clear Students </button>
+		<br>
+		<br>
+		
+		<label for="srFirstName"> First Name </label>
+		<br>
+		
+		<input id="srFirstName" type="text" placeholder="Enter First Name" required>
+		<br>
+		<br>
+		
+		<label for="srLastName"> Last Name </label>
+		<br>
+		
+		<input id="srLastName" type="text" placeholder="Enter Last Name" required>
+		<br>
+		
+		<h3 id="studentTableTitle"> All Students </h3> 
+			
+		<table id="studentTable">
+		
+			<tr>
+			
+				<th id="idHeader"> Student ID </th>
+				<th id="firstHeader"> First Name </th>
+				<th id="lastHeader"> Last Name </th>
+				<th id="avgHeader"> Average </th>
+			
+			</tr>
+		
+		</table>
+		
+		<p id="studentCount">  </p> 
+		<br>
 	
 	</body>
 
