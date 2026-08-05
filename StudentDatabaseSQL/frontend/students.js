@@ -2,10 +2,11 @@
 
 let homeButton = document.getElementById("srBackButton");
 
+let topStudentCount = document.getElementById("topStudentCount");
 let allStudentsButton = document.getElementById("viewStudentsButton");
 let clearStudentsButton = document.getElementById("clearStudentsButton");
 let studentTable = document.getElementById("studentTable");
-let studentCount = document.getElementById("studentCount");
+let bottomStudentCount = document.getElementById("bottomStudentCount");
 
 let idHeader = document.getElementById("idHeader");
 let firstHeader = document.getElementById("firstHeader");
@@ -170,11 +171,13 @@ function updateStudentCount()
 {
 	if (!allStudentsButton.disabled)
 	{
-		studentCount.textContent = "";	
+		topStudentCount.textContent = "";	
+		bottomStudentCount.textContent = "";	
 	}
 	else
 	{	
-		studentCount.textContent = "Total Students: " + students.length;
+		topStudentCount.textContent = "Total Students: " + students.length;
+		bottomStudentCount.textContent = "Total Students: " + students.length;
 	}
 }
 
@@ -185,7 +188,8 @@ function clearAllStudents()
 		studentTable.rows[i].remove();
 	}
 	
-	studentCount.textContent = "";
+	topStudentCount.textContent = "";
+	bottomStudentCount.textContent = "";
 }
 
 function refreshRecordsView()

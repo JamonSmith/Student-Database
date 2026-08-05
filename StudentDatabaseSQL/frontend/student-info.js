@@ -3,7 +3,8 @@ let studentID = parseInt(params.get("id"));
 
 // Element References
 
-let homeButton = document.getElementById("srBackButton");
+let backButton = document.getElementById("srBackButton");
+let homeButton = document.getElementById("srHomeButton");
 
 let idNumber = document.getElementById("studentIDNumber");
 let lastName = document.getElementById("studentLastName");
@@ -146,11 +147,29 @@ function removeSelectedRow()
 	}
 }
 
-function handleDocumentClick(event)
+function syncRowWithCourseName()
 {
-	if (selectedRow !== null && event.target.closest("tr") !== selectedRow)
+	let course = courseNameBox.value.trim().toLowerCase();
+	let match = null;
+	
+	for (let i = 1; i < courseTable.rows.length; i++)
 	{
-		removeSelectedRow();
+		let row = courseTable.rows[i];
+		let rowVal = row.cells[0].textContent.trim().toLowerCase();
+		
+		if (course === rowVal)
+		{
+			match = row;
+			break;
+		}
+	}
+	
+	removeSelectedRow();
+	
+	if (match !== null)
+	{
+		selectedRow = match;
+		selectedRow.classList.add("selected-row");
 	}
 }
 
@@ -489,21 +508,19 @@ buttonStates();
 
 // Event Listeners
 
+backButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7f7f";});
+backButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#000000";});
+
 homeButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7f7f";});
 homeButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#000000";});
 
 courseHeader.addEventListener("click", function () { sortCourses(COURSECOL); clearBoxes(); buttonStates(); });
 gradeHeader.addEventListener("click", function () { sortCourses(GRADECOL); clearBoxes(); buttonStates(); });
 
-document.addEventListener("click", handleDocumentClick);
+//document.addEventListener("click", handleDocumentClick);
 
-courseNameBox.addEventListener("input", buttonStates);
-clearCourseNameBoxButton.addEventListener("click", function () 
-													{ 
-														courseNameBox.value = ""; 
-														buttonStates(); 
-														removeSelectedRow();
-													});
+courseNameBox.addEventListener("input", function () { buttonStates(); syncRowWithCourseName(); });
+clearCourseNameBoxButton.addEventListener("click", function () { courseNameBox.value = ""; buttonStates(); removeSelectedRow(); });
 clearCourseNameBoxButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#bfbfbf";});
 clearCourseNameBoxButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#ffffff";});
 
