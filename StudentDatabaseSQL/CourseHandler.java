@@ -173,7 +173,7 @@ public class CourseHandler implements HttpHandler
 				{
 					response = """
 								{
-									"error": "Student or course could not be found"
+									"error": "Course could not be found"
 								}
 								""";
 					
@@ -253,7 +253,7 @@ public class CourseHandler implements HttpHandler
 				{
 					response = """
 							{
-								"error": "Student or course not found"
+								"error": "Course not found"
 							}
 							""";
 							

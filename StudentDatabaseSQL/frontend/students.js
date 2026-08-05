@@ -1,5 +1,7 @@
 // Element References
 
+let homeButton = document.getElementById("srBackButton");
+
 let allStudentsButton = document.getElementById("viewStudentsButton");
 let clearStudentsButton = document.getElementById("clearStudentsButton");
 let studentTable = document.getElementById("studentTable");
@@ -258,6 +260,10 @@ function addStudentRow(id, first, last, avg)
 	firstCell.textContent = first;
 	lastCell.textContent = last;
 	avgCell.textContent = avg;
+	
+	newRow.style.cursor = "pointer";
+	
+	newRow.addEventListener("click", function() { window.location.href = "student-info.html?id=" + id; });
 }
 
 function renderAllStudents()
@@ -405,6 +411,9 @@ buttonStates();
 
 
 // Event Listeners
+
+homeButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7f7f";});
+homeButton.addEventListener("mouseout", (event) => {event.target.style.backgroundColor = "#000000";});
 
 allStudentsButton.addEventListener("click", renderAllStudents);
 allStudentsButton.addEventListener("mouseover", (event) => {event.target.style.backgroundColor = "#7f7fff";});

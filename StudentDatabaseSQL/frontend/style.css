@@ -73,10 +73,16 @@ table
 	border-collapse: collapse;
 }
 
+input
+{
+	border: 1px solid black;
+}
+
 th, td
 {
 	border: 1px;
 	padding: 8px;
+	height: 20px;
 }
 
 th
@@ -132,6 +138,16 @@ th
 	*/
 }
 
+.clear-button
+{
+	border: 1px solid black;
+	color: grey;
+	background-color: white;
+	padding: 2px;
+	height: 20px;
+	width: 100px;
+}
+
 .error
 {
 	color: red;
@@ -158,4 +174,9 @@ button:disabled
 {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+tr.selected-row
+{
+	background-color: lightblue;
 }
